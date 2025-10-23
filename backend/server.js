@@ -1,14 +1,5 @@
-<<<<<<< HEAD
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import connectDB from './config/db.js';
-import authRoutes from './routes/authRoutes.js';
-import userRoutes from './routes/userRoutes.js';
-import roleRoutes from './routes/roleRoutes.js';
-import reportRoutes from './routes/reportRoutes.js';
-import employeeRoutes from './routes/employeeRoutes.js';  // ← Add this
-=======
+
+// ← Add this
 // server.js
 import express from "express";
 import dotenv from "dotenv";
@@ -17,13 +8,14 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
+import reportRoutes from './routes/reportRoutes.js';
+import employeeRoutes from './routes/employeeRoutes.js'; 
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js"; // ADD THIS IMPORT
 import path from "path";
 import { fileURLToPath } from "url";
 // Add to your existing imports
 import orderRoutes from "./routes/orderRoutes.js";
->>>>>>> origin/hsn
 
 // Load environment variables
 dotenv.config();
@@ -52,38 +44,26 @@ app.get("/", (req, res) => {
     message: "🍔 Restaurant POS Backend API",
     version: "2.0.0",
     endpoints: {
-<<<<<<< HEAD
       auth: '/api/auth',
       users: '/api/users',
       roles: '/api/roles',
       reports: '/api/reports',
-      employees: '/api/employees'  // ← Add this
+      employees: '/api/employees',
+       products: "/api/products",
+      categories: "/api/categories", // ← Add this
     }
-=======
-      auth: "/api/auth",
-      users: "/api/users",
-      roles: "/api/roles",
-      products: "/api/products",
-      categories: "/api/categories",
-    },
->>>>>>> origin/hsn
+  
   });
 });
 
 // API Routes
-<<<<<<< HEAD
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/employees', employeeRoutes);  // ← Add this
-=======
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
-app.use("/api/roles", roleRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes); // ADD THIS ROUTE
->>>>>>> origin/hsn
 
 // Add this route to debug categories - TEMPORARY
 app.get("/api/debug/categories", async (req, res) => {

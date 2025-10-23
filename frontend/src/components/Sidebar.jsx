@@ -7,7 +7,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
   const menuItems = [
     {
-<<<<<<< HEAD
       path: '/admin',
       icon: '🏠',
       label: 'Dashboard',
@@ -24,18 +23,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       icon: '👷',
       label: 'Employee Management',
       roles: ['main_admin', 'admin', 'manager']
-=======
-      path: "/admin",
-      icon: "🏠",
-      label: "Dashboard",
-      roles: ["main_admin", "admin", "manager", "accountant"],
+     
     },
     {
       path: "/admin/clerk",
       icon: "🛒",
       label: "Clerk Dashboard",
       roles: ["main_admin", "admin", "manager", "clerk"],
->>>>>>> origin/hsn
     },
     {
       path: "/admin/products",
@@ -43,12 +37,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       label: "Products",
       roles: ["main_admin", "admin", "manager"],
     },
-    {
-      path: "/admin/users",
-      icon: "👥",
-      label: "User Management",
-      roles: ["main_admin", "admin"],
-    },
+ 
     {
       path: "/admin/reports",
       icon: "📊",

@@ -1,22 +1,15 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import { useNavigate, Routes, Route } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+
+import React, { useState, useEffect } from "react";
+import { Link, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Sidebar from '../components/Sidebar';
 import UserManagement from '../components/UserManagement';
 import EmployeeManagement from './EmployeeManagement';  // ← Add this
 import './AdminDashboard.css';
-=======
 // debug version of AdminDashboard.jsx - paste over the file temporarily
-import React, { useState, useEffect } from "react";
-import { Link, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+
 import { useAuth } from "../context/AuthContext";
-import Sidebar from "../components/Sidebar";
-import UserManagement from "../components/UserManagement";
-import "./AdminDashboard.css";
 import ProductsPage from "./ProductsPage";
 import ClerkDashboard from "./ClerkDashboard";
->>>>>>> origin/hsn
 
 const AdminDashboard = () => {
   console.log("AdminDashboard render start");
@@ -107,19 +100,14 @@ const AdminDashboard = () => {
         <div className="dashboard-content">
           <Routes>
             <Route path="/" element={<DashboardHome />} />
-<<<<<<< HEAD
             <Route path="/users" element={<UserManagement />} />
             <Route path="/employees" element={<EmployeeManagement />} />  {/* ← Add this */}
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-=======
             <Route path="clerk" element={<ClerkDashboard />} />
             <Route path="products" element={<ProductsPage />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
+      
             <Route path="*" element={<Navigate to="/admin" replace />} />
->>>>>>> origin/hsn
           </Routes>
         </div>
       </div>
@@ -136,7 +124,6 @@ const DashboardHome = () => {
 
   return (
     <div className="dashboard-home">
-<<<<<<< HEAD
       <h2>Welcome back, {user?.name}! 👋</h2>
       
       <div className="stats-grid">
@@ -171,14 +158,6 @@ const DashboardHome = () => {
             <p className="stat-value">$0.00</p>
           </div>
         </div>
-=======
-      <h2>Welcome back, {user?.name || "User"}! 👋</h2>
-      <div style={{ padding: 12 }}>
-        <p>
-          This is a debug build. If this screen shows, routing and layout are
-          working.
-        </p>
->>>>>>> origin/hsn
       </div>
 
       <div className="quick-actions">
@@ -191,18 +170,11 @@ const DashboardHome = () => {
             <span className="action-icon">➕</span>
             <span>Add New User</span>
           </button>
-<<<<<<< HEAD
           <button className="action-card">
             <span className="action-icon">👷</span>
             <span>Add Employee</span>
           </button>
           <button className="action-card">
-=======
-          <button
-            className="action-card"
-            onClick={() => navigate("/admin/reports")}
-          >
->>>>>>> origin/hsn
             <span className="action-icon">📋</span>
             <span>View Reports</span>
           </button>
@@ -213,8 +185,6 @@ const DashboardHome = () => {
             <span className="action-icon">⚙️</span>
             <span>Settings</span>
           </button>
-<<<<<<< HEAD
-=======
           <button
             className="action-card"
             onClick={() => navigate("/admin/products")}
@@ -229,7 +199,6 @@ const DashboardHome = () => {
             <span className="action-icon">🛒</span>
             <span>Clerk Dashboard</span>
           </button>
->>>>>>> origin/hsn
         </div>
       </div>
     </div>
