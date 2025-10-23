@@ -1,81 +1,87 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const orderSchema = new mongoose.Schema({
-  orderNumber: {
+const orderItemSchema = new mongoose.Schema({
+  productId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
+  productName: {
     type: String,
     required: true,
-    unique: true
   },
-  items: [{
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true
-    },
-    name: String,
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  variant: {
+    size: String,
     price: Number,
-    quantity: {
+  },
+  subCategory: {
+    type: String,
+    required: true,
+  },
+});
+
+const orderSchema = new mongoose.Schema(
+  {
+    orderNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    items: [orderItemSchema],
+    itemNames: [String],
+    subCategories: [String],
+    subtotal: {
       type: Number,
       required: true,
-      min: 1
+      min: 0,
     },
-    customizations: [{
-      name: String,
-      option: String,
-      price: Number
-    }],
-    subtotal: Number
-  }],
-  subtotal: {
-    type: Number,
-    required: true
+    tax: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "credit_card"],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "completed", "cancelled"],
+      default: "completed",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
-  tax: {
-    type: Number,
-    required: true
-  },
-  discount: {
-    type: Number,
-    default: 0
-  },
-  total: {
-    type: Number,
-    required: true
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['cash', 'card', 'online'],
-    required: true
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'completed', 'failed'],
-    default: 'completed'
-  },
-  cashier: {
-    type: String,
-    required: true
-  },
-  tableNumber: {
-    type: String,
-    default: 'Takeaway'
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'preparing', 'ready', 'completed'],
-    default: 'completed'
+  {
+    timestamps: true,
   }
-}, {
-  timestamps: true
-});
+);
 
-// Generate order number before saving
-orderSchema.pre('save', async function(next) {
-  if (!this.orderNumber) {
-    const count = await mongoose.model('Order').countDocuments();
-    this.orderNumber = `ORD${String(count + 1).padStart(5, '0')}`;
-  }
-  next();
-});
+// Index for better query performance
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ orderNumber: 1 });
+orderSchema.index({ status: 1 });
 
-export default mongoose.model('Order', orderSchema);
+export default mongoose.model("Order", orderSchema);

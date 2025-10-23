@@ -1,0 +1,175 @@
+.invoice-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.invoice-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.invoice-header h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.order-info {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.order-number {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.order-date {
+  color: #888;
+  margin-bottom: 5px;
+}
+
+.payment-method {
+  font-weight: 500;
+  color: #28a745;
+}
+
+.invoice-items {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.empty-invoice {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.items-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.item-name-header {
+  text-align: left;
+}
+
+.item-quantity-header,
+.item-price-header,
+.item-total-header {
+  text-align: right;
+}
+
+.invoice-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.item-name {
+  font-weight: 500;
+  color: #333;
+  text-align: left;
+}
+
+.item-quantity,
+.item-price,
+.item-total {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.item-total {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.invoice-totals {
+  border-top: 2px solid #e0e0e0;
+  padding-top: 15px;
+  margin-bottom: 20px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.total-row.grand-total {
+  font-weight: 600;
+  font-size: 1.1rem;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+.invoice-actions {
+  margin-top: auto;
+}
+
+.save-invoice-btn {
+  width: 100%;
+  padding: 12px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.save-invoice-btn:hover {
+  background: #138496;
+}
+
+/* Saved Orders */
+.saved-orders {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.saved-orders h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.saved-order {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.saved-order-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.saved-order-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #666;
+}

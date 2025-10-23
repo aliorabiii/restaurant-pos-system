@@ -1,0 +1,61 @@
+.clerk-dashboard {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  height: 100vh;
+  background: #f8f9fa;
+  gap: 0;
+}
+
+.dashboard-section {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.invoice-section {
+  background: #ffffff;
+  border-right: 1px solid #e0e0e0;
+}
+
+.main-section {
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.selected-items-section {
+  background: #ffffff;
+  border-left: 1px solid #e0e0e0;
+}
+
+.invoice-section,
+.selected-items-section {
+  padding: 15px;
+}
+
+/* Responsive design - ONLY KEEP THE LAYOUT STUFF */
+@media (max-width: 1200px) {
+  .clerk-dashboard {
+    grid-template-columns: 250px 1fr 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .clerk-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+
+  .invoice-section {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    max-height: 300px;
+  }
+
+  .selected-items-section {
+    border-left: none;
+    border-top: 1px solid #e0e0e0;
+    max-height: 300px;
+  }
+}
