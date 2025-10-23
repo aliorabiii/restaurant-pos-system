@@ -1,0 +1,142 @@
+// src/services/productService.js
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+const getAuthHeaders = (token) => {
+  const t =
+    token || (typeof window !== "undefined" && localStorage.getItem("token"));
+  return t ? { Authorization: `Bearer ${t}` } : {};
+};
+
+export const fetchProducts = async (token) => {
+  try {
+    console.log("Fetching products from:", `${API_BASE}/products`);
+    const res = await fetch(`${API_BASE}/products`, {
+      headers: {
+        ...getAuthHeaders(token),
+      },
+    });
+    const data = await res.json();
+    console.log("Fetch products response:", data);
+    return data;
+  } catch (error) {
+    console.error("Fetch products error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const createProduct = async (formData, token) => {
+  try {
+    console.log("Creating product, sending to:", `${API_BASE}/products`);
+    console.log("FormData entries:");
+
+    // Log form data for debugging
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    const res = await fetch(`${API_BASE}/products`, {
+      method: "POST",
+      headers: {
+        ...getAuthHeaders(token),
+        // NOTE: DO NOT set Content-Type for FormData
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+    console.log("Create product response:", data);
+    return data;
+  } catch (error) {
+    console.error("Create product error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const updateProduct = async (productId, formData, token) => {
+  try {
+    console.log("Updating product:", productId);
+    console.log("Update FormData entries:");
+
+    // Log form data for debugging
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    const res = await fetch(`${API_BASE}/products/${productId}`, {
+      method: "PUT",
+      headers: {
+        ...getAuthHeaders(token),
+        // NOTE: DO NOT set Content-Type for FormData
+      },
+      body: formData,
+    });
+
+    const data = await res.json();
+    console.log("Update product response:", data);
+    return data;
+  } catch (error) {
+    console.error("Update product error:", error);
+    return { success: false, message: error.message };
+  }
+};
+
+// ... keep the top of the file unchanged
+export const getProductById = async (productId, token) => {
+  try {
+    const res = await fetch(`${API_BASE}/products/${productId}`, {
+      headers: {
+        ...getAuthHeaders(token),
+      },
+    });
+    const json = await res.json();
+    // Return the product object directly (backend returns { success: true, data: product })
+    return json.data ?? json;
+  } catch (error) {
+    console.error("Get product by ID error:", error);
+    return null;
+  }
+};
+
+// Add this to your existing productService.js
+
+// Get products by subcategory
+export const getProductsByCategory = async (subcategoryId, token) => {
+  try {
+    const response = await fetch(
+      `${
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api"
+      }/products?subcategory=${subcategoryId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch products");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    throw error;
+  }
+};
+
+export const deleteProduct = async (productId, token) => {
+  try {
+    const res = await fetch(`${API_BASE}/products/${productId}`, {
+      method: "DELETE",
+      headers: {
+        ...getAuthHeaders(token),
+      },
+    });
+    return res.json();
+  } catch (error) {
+    console.error("Delete product error:", error);
+    return { success: false, message: error.message };
+  }
+};
