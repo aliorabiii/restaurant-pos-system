@@ -10,13 +10,19 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       path: '/admin',
       icon: '🏠',
       label: 'Dashboard',
-      roles: ['main_admin', 'admin', 'manager', 'accountant']
+      roles: ['main_admin', 'admin', 'manager', 'accountant', 'cashier']
     },
     {
       path: '/admin/users',
       icon: '👥',
       label: 'User Management',
-      roles: ['main_admin', 'admin']  // ONLY main_admin and admin can see this
+      roles: ['main_admin', 'admin']
+    },
+    {
+      path: '/admin/employees',  // ← NEW
+      icon: '👷',
+      label: 'Employee Management',
+      roles: ['main_admin', 'admin', 'manager']
     },
     {
       path: '/admin/reports',
@@ -43,7 +49,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => {
-          // ONLY check if user has required role - NO permission check
           if (!hasRole(...item.roles)) return null;
 
           return (

@@ -20,16 +20,8 @@ const Login = () => {
     const result = await login(email, password);
 
     if (result.success) {
-      // Redirect based on role
-      if (result.user.role === 'main_admin' || result.user.role === 'admin') {
-        navigate('/admin');
-      } else if (result.user.role === 'accountant') {
-        navigate('/accounting');
-      } else if (result.user.role === 'cashier') {
-        navigate('/pos');
-      } else {
-        navigate('/dashboard');
-      }
+      // All roles go to admin dashboard (sidebar will show different menus)
+      navigate('/admin');
     } else {
       setError(result.message);
       setLoading(false);

@@ -5,6 +5,8 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+import employeeRoutes from './routes/employeeRoutes.js';  // ← Add this
 
 // Load environment variables
 dotenv.config();
@@ -25,7 +27,9 @@ app.get('/', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       users: '/api/users',
-      roles: '/api/roles'
+      roles: '/api/roles',
+      reports: '/api/reports',
+      employees: '/api/employees'  // ← Add this
     }
   });
 });
@@ -34,6 +38,8 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/employees', employeeRoutes);  // ← Add this
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -47,7 +53,6 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB first, then start server
 connectDB()
   .then(() => {
     app.listen(PORT, () => {

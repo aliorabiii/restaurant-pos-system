@@ -15,11 +15,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
 
-          {/* Admin Routes */}
+          {/* Admin Routes - Allow all roles for now */}
           <Route
             path="/admin/*"
             element={
-              <ProtectedRoute requiredRole="main_admin,admin">
+              <ProtectedRoute requiredRole="main_admin,admin,manager,accountant,cashier">
                 <AdminDashboard />
               </ProtectedRoute>
             }

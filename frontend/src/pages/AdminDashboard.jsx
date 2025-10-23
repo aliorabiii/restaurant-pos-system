@@ -3,6 +3,7 @@ import { useNavigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import UserManagement from '../components/UserManagement';
+import EmployeeManagement from './EmployeeManagement';  // ← Add this
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -52,6 +53,7 @@ const AdminDashboard = () => {
           <Routes>
             <Route path="/" element={<DashboardHome />} />
             <Route path="/users" element={<UserManagement />} />
+            <Route path="/employees" element={<EmployeeManagement />} />  {/* ← Add this */}
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
@@ -79,6 +81,14 @@ const DashboardHome = () => {
         </div>
 
         <div className="stat-card">
+          <div className="stat-icon">👷</div>
+          <div className="stat-info">
+            <h3>Employees</h3>
+            <p className="stat-value">-</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
           <div className="stat-icon">📦</div>
           <div className="stat-info">
             <h3>Orders Today</h3>
@@ -93,14 +103,6 @@ const DashboardHome = () => {
             <p className="stat-value">$0.00</p>
           </div>
         </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">📊</div>
-          <div className="stat-info">
-            <h3>Reports</h3>
-            <p className="stat-value">-</p>
-          </div>
-        </div>
       </div>
 
       <div className="quick-actions">
@@ -111,16 +113,16 @@ const DashboardHome = () => {
             <span>Add New User</span>
           </button>
           <button className="action-card">
+            <span className="action-icon">👷</span>
+            <span>Add Employee</span>
+          </button>
+          <button className="action-card">
             <span className="action-icon">📋</span>
             <span>View Reports</span>
           </button>
           <button className="action-card">
             <span className="action-icon">⚙️</span>
             <span>Settings</span>
-          </button>
-          <button className="action-card">
-            <span className="action-icon">📊</span>
-            <span>Analytics</span>
           </button>
         </div>
       </div>
