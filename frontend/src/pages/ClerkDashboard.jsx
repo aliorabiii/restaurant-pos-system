@@ -1,15 +1,18 @@
+// frontend/src/pages/ClerkDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import CategorySection from "../components/clerk/CategorySection";
+import CategoryDropdown from "../components/clerk/CategoryDropdown";
 import ProductGrid from "../components/clerk/ProductGrid";
 import SelectedItemsPanel from "../components/clerk/SelectedItemsPanel";
-import InvoicePanel from "../components/clerk/InvoicePanel";
 import ProductModal from "../components/clerk/ProductModal";
 import {
   getMainCategories,
   getSubcategories,
 } from "../services/categoryService";
-import { getProductsByCategory } from "../services/productService";
+import {
+  fetchProducts,
+  getProductsByCategory,
+} from "../services/productService";
 import { createOrder } from "../services/orderService";
 import "./ClerkDashboard.css";
 
@@ -23,19 +26,24 @@ const ClerkDashboard = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [products, setProducts] = useState([]);
+  const [query, setQuery] = useState("");
 
   // State for selected items and modal
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductModal, setShowProductModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [cashierName, setCashierName] = useState("hassan");
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [lastOrderData, setLastOrderData] = useState(null);
 
   // State for loading
   const [loading, setLoading] = useState(false);
 
-  // Load main categories on component mount
+  // Load main categories and all products on component mount
   useEffect(() => {
     loadMainCategories();
+    loadAllProducts();
   }, []);
 
   const loadMainCategories = async () => {
@@ -49,18 +57,58 @@ const ClerkDashboard = () => {
     }
   };
 
+  const loadAllProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchProducts(token);
+      if (res.success) {
+        setProducts(res.data || []);
+      } else {
+        console.error("Failed to load products:", res.message);
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error("Error loading all products:", error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleMainCategorySelect = async (category) => {
     setSelectedMainCategory(category);
     setSelectedSubcategory(null);
-    setProducts([]);
+    setSubcategories([]);
+    setLoading(true);
+
+    if (!category) {
+      // If no category selected, show all products
+      loadAllProducts();
+      return;
+    }
 
     try {
-      const res = await getSubcategories(category._id, token);
-      if (res.success) {
-        setSubcategories(res.data);
+      // Load subcategories for the selected main category
+      const subRes = await getSubcategories(category._id, token);
+      if (subRes.success) {
+        setSubcategories(subRes.data || []);
+      }
+
+      // Load all products first, then filter by main category
+      const allProductsRes = await fetchProducts(token);
+      if (allProductsRes.success) {
+        const allProducts = allProductsRes.data || [];
+        // Filter products by main category
+        const filteredProducts = allProducts.filter(
+          (product) => product.main_category?._id === category._id
+        );
+        setProducts(filteredProducts);
       }
     } catch (error) {
-      console.error("Error loading subcategories:", error);
+      console.error("Error loading category data:", error);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,10 +119,14 @@ const ClerkDashboard = () => {
     try {
       const res = await getProductsByCategory(subcategory._id, token);
       if (res.success) {
-        setProducts(res.data);
+        setProducts(res.data || []);
+      } else {
+        console.error("Failed to load products by subcategory:", res.message);
+        setProducts([]);
       }
     } catch (error) {
       console.error("Error loading products:", error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -126,15 +178,26 @@ const ClerkDashboard = () => {
     setSelectedItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
+  const handlePaymentMethodChange = (method) => {
+    setPaymentMethod(method);
+  };
+
+  const handleCashierChange = (cashier) => {
+    setCashierName(cashier);
+  };
+
   const handleSaveOrder = async (orderData) => {
     try {
+      console.log("Saving order:", orderData);
       const res = await createOrder(orderData, token);
+      console.log("Save order response:", res);
       if (res.success) {
         console.log("✅ Order saved successfully:", res.data);
-        alert("Order saved successfully!");
-        // Clear selected items after successful save
+        setLastOrderData(orderData);
+        setShowInvoiceModal(true);
         setSelectedItems([]);
       } else {
+        console.error("Failed to save order:", res.message);
         alert("Failed to save order: " + res.message);
       }
     } catch (error) {
@@ -143,60 +206,103 @@ const ClerkDashboard = () => {
     }
   };
 
-  const handlePaymentMethodChange = (method) => {
-    setPaymentMethod(method);
+  const printReceipt = () => {
+    const content = document.getElementById("thermal-receipt").innerHTML;
+    const win = window.open("", "PRINT", "width=300,height=600");
+    win.document.write("<html><head><title>Receipt</title></head><body>");
+    win.document.write(content);
+    win.document.write("</body></html>");
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
+  };
+
+  const closeInvoiceModal = () => {
+    setShowInvoiceModal(false);
+    setLastOrderData(null);
+  };
+
+  // Filter products based on search query
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(query.toLowerCase())
+  );
+
+  const getCashierDisplayName = (cashierId) => {
+    const cashiers = {
+      hassan: "Hassan",
+      ali: "Ali",
+    };
+    return cashiers[cashierId] || cashierId;
+  };
+
+  const getPaymentMethodDisplay = (method) => {
+    const paymentDisplay = {
+      cash: "Cash",
+      credit_card: "Credit Card",
+      mobile: "Mobile Pay",
+    };
+    return paymentDisplay[method] || method;
   };
 
   return (
-    <div className="clerk-dashboard">
-      {/* Left Section - Invoice */}
-      <div className="dashboard-section invoice-section">
-        <InvoicePanel
-          selectedItems={selectedItems}
-          paymentMethod={paymentMethod}
-          onSaveOrder={handleSaveOrder}
+    <div className="pos">
+      {/* Products Section - 75% */}
+      <div className="pos__products">
+        <div className="pos__header">
+          <h2>Products</h2>
+          <div className="pos__filters">
+            <div className="filter-group main-category-filter">
+              <CategoryDropdown
+                title="Main Category"
+                categories={mainCategories}
+                selectedCategory={selectedMainCategory}
+                onCategorySelect={handleMainCategorySelect}
+                placeholder="All Products"
+              />
+            </div>
+
+            <div className="filter-group sub-category-filter">
+              <CategoryDropdown
+                title="Sub Category"
+                categories={subcategories}
+                selectedCategory={selectedSubcategory}
+                onCategorySelect={handleSubcategorySelect}
+                placeholder="Select Sub Category"
+                disabled={!selectedMainCategory}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="pos__search">
+          <input
+            type="text"
+            placeholder="Search products…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="form-control"
+          />
+        </div>
+
+        <ProductGrid
+          products={filteredProducts}
+          loading={loading}
+          onProductSelect={handleProductSelect}
         />
       </div>
 
-      {/* Center Section - Product Selection */}
-      <div className="dashboard-section main-section">
-        <div className="categories-container">
-          <CategorySection
-            title="Main Categories"
-            categories={mainCategories}
-            selectedCategory={selectedMainCategory}
-            onCategorySelect={handleMainCategorySelect}
-            isMainCategory={true}
-          />
-
-          {selectedMainCategory && (
-            <CategorySection
-              title="Sub Categories"
-              categories={subcategories}
-              selectedCategory={selectedSubcategory}
-              onCategorySelect={handleSubcategorySelect}
-              isMainCategory={false}
-            />
-          )}
-        </div>
-
-        {selectedSubcategory && (
-          <ProductGrid
-            products={products}
-            loading={loading}
-            onProductSelect={handleProductSelect}
-          />
-        )}
-      </div>
-
-      {/* Right Section - Selected Items */}
-      <div className="dashboard-section selected-items-section">
+      {/* Cart Section - 25% */}
+      <div className="pos__cart">
         <SelectedItemsPanel
           selectedItems={selectedItems}
           onUpdateItem={handleUpdateItem}
           onRemoveItem={handleRemoveItem}
           paymentMethod={paymentMethod}
           onPaymentMethodChange={handlePaymentMethodChange}
+          cashierName={cashierName}
+          onCashierChange={handleCashierChange}
+          onSaveOrder={handleSaveOrder}
         />
       </div>
 
@@ -210,6 +316,93 @@ const ClerkDashboard = () => {
           }}
           onAddToOrder={handleAddToOrder}
         />
+      )}
+
+      {/* Invoice Modal */}
+      {showInvoiceModal && lastOrderData && (
+        <div className="invoice-modal-overlay" onClick={closeInvoiceModal}>
+          <div className="invoice-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="invoice-modal-header">
+              <h3>Order Invoice</h3>
+              <button className="close-btn" onClick={closeInvoiceModal}>
+                ×
+              </button>
+            </div>
+
+            <div className="invoice-modal-content">
+              <div id="thermal-receipt">
+                <div className="receipt-content">
+                  <div className="receipt-header">
+                    <h4>My Shop</h4>
+                    <p>123 Main Street, City</p>
+                    <p>Phone: (555) 123-4567</p>
+                  </div>
+                  <hr />
+                  <div className="receipt-info">
+                    <div>
+                      <strong>Order:</strong> {lastOrderData.orderNumber}
+                    </div>
+                    <div>
+                      <strong>Cashier:</strong>{" "}
+                      {getCashierDisplayName(lastOrderData.cashier)}
+                    </div>
+                    <div>
+                      <strong>Payment:</strong>{" "}
+                      {getPaymentMethodDisplay(lastOrderData.paymentMethod)}
+                    </div>
+                    <div>
+                      <strong>Date:</strong>{" "}
+                      {new Date(lastOrderData.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                  <hr />
+                  <div className="receipt-items">
+                    {lastOrderData.items.map((item, idx) => (
+                      <div key={idx} className="receipt-item">
+                        <div className="item-name">{item.productName}</div>
+                        <div className="item-details">
+                          <span className="item-quantity">
+                            x{item.quantity}
+                          </span>
+                          <span className="item-price">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <hr />
+                  <div className="receipt-totals">
+                    <div className="total-row">
+                      <span>Subtotal:</span>
+                      <span>${lastOrderData.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="total-row">
+                      <span>Tax (11%):</span>
+                      <span>${lastOrderData.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="total-row grand-total">
+                      <span>Total:</span>
+                      <span>${lastOrderData.total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="receipt-footer">
+                    <p>Thank you for your business!</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="invoice-modal-actions">
+              <button className="print-btn" onClick={printReceipt}>
+                🖨️ Print Invoice
+              </button>
+              <button className="close-invoice-btn" onClick={closeInvoiceModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

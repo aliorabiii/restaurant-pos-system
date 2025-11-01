@@ -1,139 +1,224 @@
+/* Sidebar.css — responsive improvements, preserves original classes */
+
+/* Root */
 .sidebar {
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
-  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  background: linear-gradient(180deg, #2b2e33 0%, #22262a 100%);
   color: white;
-  transition: width 0.3s ease;
-  z-index: 100;
+  transition: width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.28s ease;
+  z-index: 1100;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
+  min-width: 0;
 }
 
-.sidebar.open {
-  width: 260px;
+/* states (keeps same class names you already use in JSX) */
+.sidebar.expanded {
+  width: 250px;
 }
 
-.sidebar.closed {
+.sidebar.collapsed {
   width: 70px;
 }
 
+/* header */
 .sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.logo-icon {
-  font-size: 32px;
+  justify-content: center;
 }
 
 .logo-text {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: white;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.logo-icon {
+  font-size: 1.5rem;
+}
+
+/* nav area */
 .sidebar-nav {
   flex: 1;
-  padding: 20px 0;
+  padding: 0.9rem 0.5rem;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  color: rgba(255,255,255,0.8);
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.88);
   text-decoration: none;
-  transition: all 0.3s ease;
-  margin: 4px 12px;
+  transition: all 0.16s ease;
+  margin: 0.2rem 0.5rem;
   border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.1);
-  color: white;
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateX(4px);
 }
 
 .nav-item.active {
-  background: rgba(102, 126, 234, 0.2);
-  color: white;
-  border-left: 4px solid #667eea;
-  padding-left: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border-left: 4px solid rgba(255, 255, 255, 0.14);
+  padding-left: 0.9rem;
 }
 
+/* icon and label */
 .nav-icon {
-  font-size: 24px;
-  min-width: 30px;
+  font-size: 1.25rem;
+  min-width: 28px;
   text-align: center;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-label {
   white-space: nowrap;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* collapsed tweaks — we rely on the existing .collapsed class your JSX sets */
+.sidebar.collapsed .nav-label {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.sidebar.collapsed .nav-item.active {
+  border-left: none;
+  border-bottom: 4px solid rgba(255, 255, 255, 0.12);
+}
+
+/* footer / user badge */
 .sidebar-footer {
-  padding: 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 1rem 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .user-badge {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.65rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .badge-avatar {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
 }
 
 .badge-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .badge-name {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .badge-role {
-  font-size: 12px;
-  opacity: 0.7;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
   text-transform: capitalize;
 }
 
-.sidebar.closed .logo-text,
-.sidebar.closed .nav-label,
-.sidebar.closed .user-badge {
+/* collapsed footer */
+.sidebar.collapsed .badge-info {
   display: none;
 }
-
-.sidebar.closed .nav-item {
+.sidebar.collapsed .user-badge {
   justify-content: center;
-  padding: 14px;
+  padding: 0.75rem;
 }
 
-.sidebar.closed .nav-item.active {
-  border-left: none;
-  border-bottom: 4px solid #667eea;
+/* scrollbar */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+/* Mobile behavior — note: your components set collapsed/expanded; we keep relying on them */
+@media (max-width: 768px) {
+  /* keep expanded width a bit wider on tablet */
+  .sidebar.expanded {
+    width: 280px;
+  }
+
+  /* collapsed state becomes effectively hidden to free screen space */
+  .sidebar.collapsed {
+    width: 0;
+    overflow: hidden;
+  }
+
+  /* ensure nav items are large enough for touch */
+  .nav-item {
+    padding: 0.9rem 1rem;
+    margin: 0.25rem 0.5rem;
+    border-radius: 10px;
+  }
+
+  .logo-text {
+    display: inline-block;
+  }
+}
+
+/* Focus accessibility */
+.nav-item:focus,
+.badge-avatar:focus {
+  outline: 3px solid rgba(69, 6, 147, 0.12);
+  outline-offset: 2px;
 }

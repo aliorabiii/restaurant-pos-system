@@ -1,3 +1,4 @@
+// frontend/src/components/clerk/ProductGrid.jsx
 import React from "react";
 import "./ProductGrid.css";
 
@@ -16,51 +17,60 @@ const ProductGrid = ({ products, loading, onProductSelect }) => {
       <div className="empty-state">
         <div className="empty-icon">📦</div>
         <h3>No products found</h3>
-        <p>Select a subcategory to view products</p>
+        <p>Select a category to view products</p>
       </div>
     );
   }
 
+  const handleAddClick = (e, product) => {
+    e.stopPropagation(); // Prevent the card click from firing
+    onProductSelect(product);
+  };
+
   return (
-    <div className="product-grid">
-      <h3 className="section-title">Products</h3>
-      <div className="products-table-container">
-        <table className="products-table">
-          <thead>
-            <tr>
-              <th className="name-col">Product Name</th>
-              <th className="price-col">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr
-                key={product._id}
-                className="product-row"
-                onClick={() => onProductSelect(product)}
-              >
-                <td className="product-name">{product.name}</td>
-                <td className="product-price">
-                  {product.has_sizes && product.variants?.length > 0 ? (
-                    <div className="variant-prices">
-                      {product.variants.map((variant, index) => (
-                        <div key={index} className="variant-price">
-                          <span className="variant-size">{variant.size}:</span>
-                          <span className="variant-amount">
-                            ${variant.price?.toFixed(2)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <span>${product.base_price?.toFixed(2)}</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="pos__grid">
+      {products.map((product) => (
+        <div
+          key={product._id}
+          className="pos__card"
+          onClick={() => onProductSelect(product)}
+        >
+          <div className="product-image">
+            <img
+              src={
+                product.images?.length
+                  ? product.images[0].startsWith("http")
+                    ? product.images[0]
+                    : `http://localhost:5000${product.images[0]}`
+                  : "/placeholder.png"
+              }
+              alt={product.name}
+              onError={(e) => {
+                e.target.src = "/placeholder.png";
+              }}
+            />
+          </div>
+          <div className="pos__card-name">{product.name}</div>
+          <div className="pos__card-meta">
+            <span className="pill">
+              {product.sub_category?.name || "General"}
+            </span>
+            {product.has_sizes && product.variants?.length > 0 ? (
+              <div className="price">
+                ${Math.min(...product.variants.map((v) => v.price)).toFixed(2)}+
+              </div>
+            ) : (
+              <div className="price">${product.base_price?.toFixed(2)}</div>
+            )}
+          </div>
+          <button
+            className="add-button"
+            onClick={(e) => handleAddClick(e, product)}
+          >
+            Add
+          </button>
+        </div>
+      ))}
     </div>
   );
 };

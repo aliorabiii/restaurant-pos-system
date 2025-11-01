@@ -24,6 +24,8 @@ export const fetchProducts = async (token) => {
   }
 };
 
+
+
 export const createProduct = async (formData, token) => {
   try {
     console.log("Creating product, sending to:", `${API_BASE}/products`);
@@ -140,3 +142,4 @@ export const deleteProduct = async (productId, token) => {
     return { success: false, message: error.message };
   }
 };
+

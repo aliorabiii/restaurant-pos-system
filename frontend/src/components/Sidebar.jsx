@@ -2,62 +2,72 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Sidebar.css";
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
+// React Icons imports for Sidebar
+import {
+  FiPieChart,
+  FiUsers,
+  FiUserCheck,
+  FiPackage,
+  FiBarChart2,
+  FiSettings,
+  FiShoppingCart,
+  FiHome,
+} from "react-icons/fi";
+
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const { user, hasRole } = useAuth();
 
   const menuItems = [
     {
-      path: '/admin',
-      icon: '🏠',
-      label: 'Dashboard',
-      roles: ['main_admin', 'admin', 'manager', 'accountant', 'cashier']
+      path: "/admin",
+      icon: <FiPieChart className="nav-icon" />,
+      label: "Dashboard",
+      roles: ["main_admin", "admin", "manager", "accountant", "cashier"],
     },
     {
-      path: '/admin/users',
-      icon: '👥',
-      label: 'User Management',
-      roles: ['main_admin', 'admin']
+      path: "/admin/users",
+      icon: <FiUsers className="nav-icon" />,
+      label: "User Management",
+      roles: ["main_admin", "admin"],
     },
     {
-      path: '/admin/employees',  // ← NEW
-      icon: '👷',
-      label: 'Employee Management',
-      roles: ['main_admin', 'admin', 'manager']
-     
+      path: "/admin/employees",
+      icon: <FiUserCheck className="nav-icon" />,
+      label: "Employee Management",
+      roles: ["main_admin", "admin", "manager"],
     },
     {
       path: "/admin/clerk",
-      icon: "🛒",
+      icon: <FiShoppingCart className="nav-icon" />,
       label: "Clerk Dashboard",
       roles: ["main_admin", "admin", "manager", "clerk"],
     },
     {
       path: "/admin/products",
-      icon: "📦",
+      icon: <FiPackage className="nav-icon" />,
       label: "Products",
       roles: ["main_admin", "admin", "manager"],
     },
- 
     {
       path: "/admin/reports",
-      icon: "📊",
+      icon: <FiBarChart2 className="nav-icon" />,
       label: "Reports",
       roles: ["main_admin", "admin", "manager", "accountant"],
     },
     {
       path: "/admin/settings",
-      icon: "⚙️",
+      icon: <FiSettings className="nav-icon" />,
       label: "Settings",
       roles: ["main_admin", "admin"],
     },
   ];
 
   return (
-    <aside className={`sidebar ${isOpen ? "open" : "closed"}`}>
+    <aside className={`sidebar ${isCollapsed ? "collapsed" : "expanded"}`}>
       <div className="sidebar-header">
         <div className="logo">
-          <span className="logo-icon">🍔</span>
-          {isOpen && <span className="logo-text">Restaurant POS</span>}
+          {!isCollapsed && <span className="logo-text">Restaurant POS</span>}
+          {isCollapsed && <FiHome className="logo-icon" />}
         </div>
       </div>
 
@@ -74,25 +84,25 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 `nav-item ${isActive ? "active" : ""}`
               }
             >
-              <span className="nav-icon">{item.icon}</span>
-              {isOpen && <span className="nav-label">{item.label}</span>}
+              {item.icon}
+              {!isCollapsed && <span className="nav-label">{item.label}</span>}
             </NavLink>
           );
         })}
       </nav>
 
       <div className="sidebar-footer">
-        {isOpen && (
-          <div className="user-badge">
-            <div className="badge-avatar">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
+        <div className="user-badge">
+          <div className="badge-avatar">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          {!isCollapsed && (
             <div className="badge-info">
               <span className="badge-name">{user?.name}</span>
               <span className="badge-role">{user?.role}</span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </aside>
   );
