@@ -16,6 +16,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 // Add to your existing imports
 import orderRoutes from "./routes/orderRoutes.js";
+import expenseRoutes from './routes/expenseRoutes.js';  // ← Add this
 
 // Load environment variables
 dotenv.config();
@@ -51,6 +52,7 @@ app.get("/", (req, res) => {
       employees: '/api/employees',
        products: "/api/products",
       categories: "/api/categories", // ← Add this
+       expenses: '/api/expenses'  // ← Add this
     }
   
   });
@@ -64,6 +66,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/employees', employeeRoutes);  // ← Add this
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes); // ADD THIS ROUTE
+app.use('/api/expenses', expenseRoutes);  // ← Add this
 
 // Add this route to debug categories - TEMPORARY
 app.get("/api/debug/categories", async (req, res) => {
