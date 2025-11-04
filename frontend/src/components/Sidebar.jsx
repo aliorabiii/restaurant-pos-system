@@ -19,11 +19,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       roles: ['main_admin', 'admin']
     },
     {
-      path: '/admin/employees',  // ← NEW
+      path: '/admin/employees',
       icon: '👷',
       label: 'Employee Management',
       roles: ['main_admin', 'admin', 'manager']
-     
+    },
+    {
+      path: '/admin/expenses',  // ← NEW: Expense Management
+      icon: '💰',
+      label: 'Expense Management',
+      roles: ['main_admin', 'admin', 'manager', 'accountant']
     },
     {
       path: "/admin/clerk",
@@ -37,7 +42,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       label: "Products",
       roles: ["main_admin", "admin", "manager"],
     },
- 
     {
       path: "/admin/reports",
       icon: "📊",

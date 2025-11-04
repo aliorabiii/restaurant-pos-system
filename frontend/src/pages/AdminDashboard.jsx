@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Sidebar from '../components/Sidebar';
 import UserManagement from '../components/UserManagement';
-import EmployeeManagement from './EmployeeManagement';  // ← Add this
+import EmployeeManagement from './EmployeeManagement';
+import ExpensePage from './ExpensePage';  // ← Add this import
 import './AdminDashboard.css';
-// debug version of AdminDashboard.jsx - paste over the file temporarily
 
 import { useAuth } from "../context/AuthContext";
 import ProductsPage from "./ProductsPage";
 import ClerkDashboard from "./ClerkDashboard";
+import ReportsPage from "./ReportsPage.jsx";
 
 const AdminDashboard = () => {
   console.log("AdminDashboard render start");
@@ -101,9 +101,9 @@ const AdminDashboard = () => {
           <Routes>
             <Route path="/" element={<DashboardHome />} />
             <Route path="/users" element={<UserManagement />} />
-            <Route path="/employees" element={<EmployeeManagement />} />  {/* ← Add this */}
+            <Route path="/employees" element={<EmployeeManagement />} />
+            <Route path="/expenses" element={<ExpensePage />} />  {/* ← Add this route */}
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
             <Route path="clerk" element={<ClerkDashboard />} />
             <Route path="products" element={<ProductsPage />} />
       
@@ -170,20 +170,26 @@ const DashboardHome = () => {
             <span className="action-icon">➕</span>
             <span>Add New User</span>
           </button>
-          <button className="action-card">
+          <button 
+            className="action-card"
+            onClick={() => navigate("/admin/employees")}
+          >
             <span className="action-icon">👷</span>
             <span>Add Employee</span>
           </button>
-          <button className="action-card">
+          <button 
+            className="action-card"
+            onClick={() => navigate("/admin/expenses")}  // ← Add this
+          >
+            <span className="action-icon">💰</span>
+            <span>Manage Expenses</span>
+          </button>
+          <button 
+            className="action-card"
+            onClick={() => navigate("/admin/reports")}
+          >
             <span className="action-icon">📋</span>
             <span>View Reports</span>
-          </button>
-          <button
-            className="action-card"
-            onClick={() => navigate("/admin/settings")}
-          >
-            <span className="action-icon">⚙️</span>
-            <span>Settings</span>
           </button>
           <button
             className="action-card"
@@ -204,19 +210,5 @@ const DashboardHome = () => {
     </div>
   );
 };
-
-const ReportsPage = () => (
-  <div className="page-placeholder">
-    <h2>📊 Reports</h2>
-    <p>Reports page coming soon...</p>
-  </div>
-);
-
-const SettingsPage = () => (
-  <div className="page-placeholder">
-    <h2>⚙️ Settings</h2>
-    <p>Settings page coming soon...</p>
-  </div>
-);
 
 export default AdminDashboard;

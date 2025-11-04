@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import Unauthorized from './pages/Unauthorized';
+import ExpensePage from './pages/ExpensePage';
 import './App.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           
           {/* 404 - Catch all */}
           <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="/expenses" element={<ExpensePage />} />
         </Routes>
       </Router>
     </AuthProvider>
