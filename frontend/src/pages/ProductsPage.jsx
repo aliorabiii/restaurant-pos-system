@@ -37,21 +37,76 @@ export default function ProductsPage() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [allCategories, setAllCategories] = useState([]); // Combined categories for lookup
 
-  // Load products
-  const loadProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetchProducts(token);
-      if (res.success) {
-        setProducts(res.data || []);
-        setFilteredProducts(res.data || []);
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalProducts: 0,
+    productsPerPage: 15,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
+
+  // Load products with pagination
+  const loadProducts = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      try {
+        // Build query parameters with pagination
+        const params = new URLSearchParams();
+        params.append("page", page.toString());
+        params.append("limit", "15");
+
+        if (selectedMainCategory)
+          params.append("maincategory", selectedMainCategory);
+        if (selectedSubCategory)
+          params.append("subcategory", selectedSubCategory);
+        if (statusFilter) params.append("status", statusFilter);
+
+        // Create the full URL with query parameters
+        const API_BASE =
+          import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+        const url = `${API_BASE}/products?${params.toString()}`;
+
+        console.log("Fetching products from:", url);
+
+        const response = await fetch(url, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+
+        if (res.success) {
+          setProducts(res.data || []);
+          setFilteredProducts(res.data || []);
+          setPaginationInfo(
+            res.pagination || {
+              currentPage: page,
+              totalPages: 1,
+              totalProducts: res.data?.length || 0,
+              productsPerPage: 15,
+              hasNextPage: false,
+              hasPrevPage: false,
+            }
+          );
+          setCurrentPage(page);
+        }
+      } catch (error) {
+        console.error("Error loading products:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading products:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+    },
+    [token, selectedMainCategory, selectedSubCategory, statusFilter]
+  );
 
   // Load main categories
   const loadMainCategories = async () => {
@@ -110,9 +165,9 @@ export default function ProductsPage() {
 
   // Initial load
   useEffect(() => {
-    loadProducts();
+    loadProducts(1);
     loadMainCategories();
-  }, [loadProducts]);
+  }, []);
 
   // Load subcategories when main category changes
   useEffect(() => {
@@ -125,7 +180,7 @@ export default function ProductsPage() {
     }
   }, [selectedMainCategory]);
 
-  // Filter products
+  // Filter products locally for search (since we already have paginated data)
   useEffect(() => {
     let filtered = products;
 
@@ -135,36 +190,40 @@ export default function ProductsPage() {
       );
     }
 
-    if (selectedMainCategory) {
-      filtered = filtered.filter((product) => {
-        const mainCategoryId =
-          product.main_category?._id || product.main_category;
-        return mainCategoryId === selectedMainCategory;
-      });
-    }
-
-    if (selectedSubCategory) {
-      filtered = filtered.filter((product) => {
-        const subCategoryId = product.sub_category?._id || product.sub_category;
-        return subCategoryId === selectedSubCategory;
-      });
-    }
-
-    if (statusFilter) {
-      filtered = filtered.filter((product) => product.status === statusFilter);
-    }
+    // Note: Category and status filters are handled server-side via loadProducts
+    // This local filtering is only for search within the current page
 
     setFilteredProducts(filtered);
-  }, [
-    products,
-    searchTerm,
-    selectedMainCategory,
-    selectedSubCategory,
-    statusFilter,
-  ]);
+  }, [products, searchTerm]);
+
+  // Reload products when filters change (server-side filtering)
+  useEffect(() => {
+    setCurrentPage(1);
+    loadProducts(1);
+  }, [selectedMainCategory, selectedSubCategory, statusFilter, loadProducts]);
+
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (paginationInfo.hasNextPage) {
+      const nextPage = currentPage + 1;
+      loadProducts(nextPage);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (paginationInfo.hasPrevPage) {
+      const prevPage = currentPage - 1;
+      loadProducts(prevPage);
+    }
+  };
+
+  const handlePageClick = (pageNumber) => {
+    loadProducts(pageNumber);
+  };
 
   const handleProductCreated = (productData) => {
-    setProducts((prev) => [productData, ...prev]);
+    // Reload first page to show the new product
+    loadProducts(1);
     setOpen(false);
   };
 
@@ -180,11 +239,13 @@ export default function ProductsPage() {
 
   const handleUpdateProduct = async (productId, updateData) => {
     try {
+      // Update local state immediately for better UX
       setProducts((prev) =>
         prev.map((p) => (p._id === productId ? { ...p, ...updateData } : p))
       );
       setEditModal(false);
-      await loadProducts();
+      // Reload current page to ensure data consistency
+      await loadProducts(currentPage);
     } catch (error) {
       console.error("Error updating product:", error);
     }
@@ -197,7 +258,8 @@ export default function ProductsPage() {
     try {
       const res = await deleteProduct(productId, token);
       if (res.success) {
-        setProducts((prev) => prev.filter((p) => p._id !== productId));
+        // Reload current page to reflect deletion
+        await loadProducts(currentPage);
       }
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -209,6 +271,8 @@ export default function ProductsPage() {
     setSelectedMainCategory("");
     setSelectedSubCategory("");
     setStatusFilter("");
+    setCurrentPage(1);
+    loadProducts(1);
   };
 
   const imageBase = (imgPath) => {
@@ -328,6 +392,90 @@ export default function ProductsPage() {
     loadAllCategories();
   }, [products, allCategories]);
 
+  // Render pagination component
+  const renderPagination = () => {
+    if (paginationInfo.totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(
+      paginationInfo.totalPages,
+      startPage + maxVisiblePages - 1
+    );
+
+    // Adjust start page if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageClick(i)}
+          className={`pagination-btn ${currentPage === i ? "active" : ""}`}
+          disabled={loading}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="pagination-container">
+        <button
+          onClick={handlePrevPage}
+          disabled={!paginationInfo.hasPrevPage || loading}
+          className="pagination-btn pagination-prev"
+        >
+          Previous
+        </button>
+
+        {startPage > 1 && (
+          <>
+            <button
+              onClick={() => handlePageClick(1)}
+              className="pagination-btn"
+              disabled={loading}
+            >
+              1
+            </button>
+            {startPage > 2 && <span className="pagination-ellipsis">...</span>}
+          </>
+        )}
+
+        {pages}
+
+        {endPage < paginationInfo.totalPages && (
+          <>
+            {endPage < paginationInfo.totalPages - 1 && (
+              <span className="pagination-ellipsis">...</span>
+            )}
+            <button
+              onClick={() => handlePageClick(paginationInfo.totalPages)}
+              className="pagination-btn"
+              disabled={loading}
+            >
+              {paginationInfo.totalPages}
+            </button>
+          </>
+        )}
+
+        <button
+          onClick={handleNextPage}
+          disabled={!paginationInfo.hasNextPage || loading}
+          className="pagination-btn pagination-next"
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
+
+  // Results information
+  const resultsInfo = `Showing ${filteredProducts.length} products on page ${currentPage} of ${paginationInfo.totalPages} (Total: ${paginationInfo.totalProducts} products)`;
+
   return (
     <div className="products-page">
       <div className="page-header">
@@ -407,7 +555,7 @@ export default function ProductsPage() {
         </div>
 
         <div className="results-info">
-          Showing {filteredProducts.length} of {products.length} products
+          {resultsInfo}
           {(searchTerm ||
             selectedMainCategory ||
             selectedSubCategory ||
@@ -425,11 +573,11 @@ export default function ProductsPage() {
           <div className="empty-icon">🔍</div>
           <h3>No products found</h3>
           <p>
-            {products.length === 0
+            {paginationInfo.totalProducts === 0
               ? "Create your first product"
               : "Try adjusting filters"}
           </p>
-          {products.length === 0 ? (
+          {paginationInfo.totalProducts === 0 ? (
             <button className="add-product-btn" onClick={() => setOpen(true)}>
               + Add Product
             </button>
@@ -440,108 +588,115 @@ export default function ProductsPage() {
           )}
         </div>
       ) : (
-        <div className="products-table-container">
-          <table className="products-table">
-            <thead>
-              <tr>
-                <th className="image-col">Image</th>
-                <th className="name-col">Product Name</th>
-                <th className="category-col">Main Category</th>
-                <th className="category-col">Sub Category</th>
-                <th className="price-col">Price</th>
-                <th className="sizes-col">Sizes</th>
-                <th className="status-col">Status</th>
-                <th className="actions-col">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.map((product) => (
-                <tr key={product._id} className="product-row">
-                  <td>
-                    <div className="product-image-wrapper">
-                      <img
-                        src={
-                          product.images?.length
-                            ? imageBase(product.images[0])
-                            : "/placeholder.png"
-                        }
-                        alt={product.name}
-                        className="product-table-image"
-                      />
-                    </div>
-                  </td>
-                  <td>
-                    <div className="product-name">{product.name}</div>
-                  </td>
-                  <td>
-                    <div className="category-name">
-                      {getCategoryName(product.main_category)}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="category-name">
-                      {getCategoryName(product.sub_category)}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="base-price">
-                      ${product.base_price?.toFixed(2) || "0.00"}
-                    </div>
-                    {product.prep_time_minutes && (
-                      <div className="prep-time">
-                        {product.prep_time_minutes} min
-                      </div>
-                    )}
-                  </td>
-                  <td>
-                    {product.has_sizes && product.variants?.length > 0 ? (
-                      <div className="size-prices">
-                        {product.variants.slice(0, 3).map((variant, index) => (
-                          <div key={index} className="size-price-item">
-                            <span className="size-label">
-                              {variant.size.charAt(0).toUpperCase()}
-                            </span>
-                            <span className="size-price">
-                              ${variant.price?.toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="no-sizes">No sizes</span>
-                    )}
-                  </td>
-                  <td>{getStatusBadge(product.status)}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button
-                        onClick={() => handleShowProduct(product)}
-                        className="action-btn view-btn"
-                        title="View"
-                      >
-                        👁️
-                      </button>
-                      <button
-                        onClick={() => handleEditProduct(product)}
-                        className="action-btn edit-btn"
-                        title="Edit"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProduct(product._id)}
-                        className="action-btn delete-btn"
-                        title="Delete"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <div className="products-table-container">
+            <table className="products-table">
+              <thead>
+                <tr>
+                  <th className="image-col">Image</th>
+                  <th className="name-col">Product Name</th>
+                  <th className="category-col">Main Category</th>
+                  <th className="category-col">Sub Category</th>
+                  <th className="price-col">Price</th>
+                  <th className="sizes-col">Sizes</th>
+                  <th className="status-col">Status</th>
+                  <th className="actions-col">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product) => (
+                  <tr key={product._id} className="product-row">
+                    <td>
+                      <div className="product-image-wrapper">
+                        <img
+                          src={
+                            product.images?.length
+                              ? imageBase(product.images[0])
+                              : "/placeholder.png"
+                          }
+                          alt={product.name}
+                          className="product-table-image"
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <div className="product-name">{product.name}</div>
+                    </td>
+                    <td>
+                      <div className="category-name">
+                        {getCategoryName(product.main_category)}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="category-name">
+                        {getCategoryName(product.sub_category)}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="base-price">
+                        ${product.base_price?.toFixed(2) || "0.00"}
+                      </div>
+                      {product.prep_time_minutes && (
+                        <div className="prep-time">
+                          {product.prep_time_minutes} min
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {product.has_sizes && product.variants?.length > 0 ? (
+                        <div className="size-prices">
+                          {product.variants
+                            .slice(0, 3)
+                            .map((variant, index) => (
+                              <div key={index} className="size-price-item">
+                                <span className="size-label">
+                                  {variant.size.charAt(0).toUpperCase()}
+                                </span>
+                                <span className="size-price">
+                                  ${variant.price?.toFixed(2)}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        <span className="no-sizes">No sizes</span>
+                      )}
+                    </td>
+                    <td>{getStatusBadge(product.status)}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          onClick={() => handleShowProduct(product)}
+                          className="action-btn view-btn"
+                          title="View"
+                        >
+                          👁️
+                        </button>
+                        <button
+                          onClick={() => handleEditProduct(product)}
+                          className="action-btn edit-btn"
+                          title="Edit"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product._id)}
+                          className="action-btn delete-btn"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {renderPagination()}
+        </>
       )}
 
       {/* Modals */}

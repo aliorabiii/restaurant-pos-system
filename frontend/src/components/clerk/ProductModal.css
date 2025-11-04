@@ -1,4 +1,5 @@
-.modal-overlay {
+/* frontend/src/components/clerk/ProductModal.css */
+.product-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -15,24 +16,25 @@
 .product-modal {
   background: white;
   border-radius: 12px;
+  padding: 0;
   width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header {
+.product-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 20px 20px 0 20px;
+  margin-bottom: 20px;
 }
 
-.modal-header h2 {
+.product-modal-header h3 {
   margin: 0;
-  color: #333;
+  color: var(--ink);
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .close-btn {
@@ -40,63 +42,63 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  padding: 5px;
-  color: #666;
+  color: var(--muted);
+  padding: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-  color: #333;
+  background: #f3f4f6;
+  color: var(--ink);
 }
 
-.modal-content {
-  padding: 20px;
+.product-modal-content {
+  padding: 0 20px;
 }
 
-/* Update the product image section in ProductModal.css */
-.product-image {
-  width: 200px;
-  height: 150px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 0 auto 20px auto;
+.section-label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 14px;
 }
 
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Description Section */
+.description-section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.product-details {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.product-description {
-  color: #666;
-  line-height: 1.5;
+.description-section p {
   margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 14px;
 }
 
-.variants-section h4,
-.price-section h4,
-.quantity-section h4,
-.total-section h4 {
-  margin: 0 0 10px 0;
-  color: #333;
+/* Variants Section */
+.variants-section {
+  margin-bottom: 20px;
 }
 
 .variants-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .variant-btn {
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid var(--border);
   border-radius: 8px;
   background: white;
   cursor: pointer;
@@ -104,113 +106,178 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .variant-btn:hover {
-  border-color: #007bff;
+  border-color: var(--brand);
+  transform: translateY(-1px);
 }
 
 .variant-btn.selected {
-  border-color: #007bff;
-  background: #007bff;
+  border-color: var(--brand);
+  background: var(--brand);
   color: white;
 }
 
 .variant-size {
   font-weight: 600;
   text-transform: capitalize;
+  font-size: 14px;
 }
 
 .variant-price {
-  font-size: 0.9rem;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .variant-warning {
-  color: #dc3545;
-  font-size: 0.9rem;
+  color: #dc2626;
+  font-size: 13px;
   margin: 0;
+  text-align: center;
 }
 
-.price-section .base-price {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #007bff;
+/* Price Section */
+.price-section {
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.quantity-controls {
+.base-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Quantity Section */
+.quantity-section {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.quantity-input-group {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
 }
 
 .quantity-btn {
   width: 40px;
   height: 40px;
-  border: 2px solid #007bff;
+  border: 2px solid var(--brand);
   background: white;
-  color: #007bff;
+  color: var(--brand);
   border-radius: 8px;
   cursor: pointer;
   font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .quantity-btn:hover:not(:disabled) {
-  background: #007bff;
+  background: var(--brand);
   color: white;
 }
 
 .quantity-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.quantity {
-  font-size: 1.2rem;
-  font-weight: 600;
-  min-width: 30px;
-  text-align: center;
-}
-
-.total-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 15px;
-  border-top: 2px solid #e0e0e0;
-}
-
-.total-price {
+.quantity-display {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #28a745;
+  min-width: 60px;
+  text-align: center;
+  color: var(--ink);
 }
 
-.modal-actions {
+/* Price Summary */
+.price-summary {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.price-row.total {
+  font-weight: 700;
+  font-size: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 12px;
+  color: var(--ink);
+}
+
+/* Modal Actions */
+.product-modal-actions {
+  display: flex;
+  gap: 12px;
   padding: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+
+.cancel-btn,
+.add-to-order-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: var(--ink);
+}
+
+.cancel-btn:hover {
+  background: #e5e7eb;
 }
 
 .add-to-order-btn {
-  width: 100%;
-  padding: 15px;
-  background: #28a745;
+  background: var(--brand);
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .add-to-order-btn:hover:not(:disabled) {
-  background: #218838;
+  filter: brightness(0.95);
+  transform: translateY(-1px);
 }
 
 .add-to-order-btn:disabled {
-  background: #6c757d;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .product-modal {
+    margin: 20px;
+    max-width: none;
+  }
+
+  .variants-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+
+  .product-modal-actions {
+    flex-direction: column;
+  }
 }

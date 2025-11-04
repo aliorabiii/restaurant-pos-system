@@ -11,19 +11,53 @@ import ProductsPage from "./ProductsPage";
 import ClerkDashboard from "./ClerkDashboard";
 import ReportsPage from "./ReportsPage.jsx";
 
+// React Icons imports
+import {
+  FiPieChart,
+  FiUsers,
+  FiUserCheck,
+  FiPackage,
+  FiBarChart2,
+  FiSettings,
+  FiShoppingCart,
+  FiLogOut,
+  FiMenu,
+  FiDollarSign,
+  FiHome,
+} from "react-icons/fi";
+
+// Icon components with consistent styling
+const DashboardIcon = () => <FiPieChart className="icon" />;
+const UsersIcon = () => <FiUsers className="icon" />;
+const EmployeesIcon = () => <FiUserCheck className="icon" />;
+const ProductsIcon = () => <FiPackage className="icon" />;
+const ReportsIcon = () => <FiBarChart2 className="icon" />;
+const SettingsIcon = () => <FiSettings className="icon" />;
+const ClerkIcon = () => <FiShoppingCart className="icon" />;
+const LogoutIcon = () => <FiLogOut className="icon" />;
+const MenuIcon = () => <FiMenu className="icon" />;
+const RevenueIcon = () => <FiDollarSign className="icon" />;
+
 const AdminDashboard = () => {
-  console.log("AdminDashboard render start");
   const auth = useAuth();
-  console.log("useAuth returned:", auth);
   const user = auth?.user;
   const logout = auth?.logout;
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("AdminDashboard mounted");
-    return () => console.log("AdminDashboard unmount");
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setSidebarCollapsed(true);
+      } else {
+        setSidebarCollapsed(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleLogout = async () => {
@@ -36,68 +70,66 @@ const AdminDashboard = () => {
     }
   };
 
-  // If a runtime error happened show it
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   if (error) {
     return (
-      <div style={{ padding: 20 }}>
+      <div className="error-container">
         <h2>Something went wrong</h2>
-        <pre style={{ color: "red" }}>{String(error)}</pre>
+        <pre>{String(error)}</pre>
       </div>
     );
   }
 
-  // If useAuth returned nothing, show warning
   if (!auth) {
     return (
-      <div style={{ padding: 20 }}>
+      <div className="error-container">
         <h2>Auth context not found</h2>
-        <p>
-          The <code>useAuth()</code> hook returned <code>undefined</code>. Check
-          that your <code>AuthContext</code> provider wraps <code>App</code> and
-          that the hook is exported correctly.
-        </p>
+        <p>Please check your AuthContext provider.</p>
       </div>
     );
   }
 
   return (
     <div className="admin-dashboard">
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
+      />
 
       <div
         className={`main-content ${
-          sidebarOpen ? "sidebar-open" : "sidebar-closed"
+          sidebarCollapsed ? "sidebar-collapsed" : "sidebar-expanded"
         }`}
       >
-        {/* Header */}
-        <div className="dashboard-header">
+        <header className="dashboard-header">
           <div className="header-left">
-            <button
-              className="menu-toggle"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              ☰
+            <button className="menu-toggle" onClick={toggleSidebar}>
+              <MenuIcon />
             </button>
             <h1>Admin Dashboard</h1>
           </div>
+
           <div className="header-right">
-            <div className="user-info">
+            <div className="user-profile">
               <div className="user-avatar">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "?"}
+                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
               </div>
-              <div className="user-details">
+              <div className="user-info">
                 <span className="user-name">{user?.name || "Unknown"}</span>
                 <span className="user-role">{user?.role || "—"}</span>
               </div>
             </div>
             <button className="logout-btn" onClick={handleLogout}>
-              🚪 Logout
+              <LogoutIcon />
+              <span>Logout</span>
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Content Area */}
-        <div className="dashboard-content">
+        <main className="dashboard-content">
           <Routes>
             <Route path="/" element={<DashboardHome />} />
             <Route path="/users" element={<UserManagement />} />
@@ -106,10 +138,9 @@ const AdminDashboard = () => {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="clerk" element={<ClerkDashboard />} />
             <Route path="products" element={<ProductsPage />} />
-      
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
-        </div>
+        </main>
       </div>
     </div>
   );
@@ -118,97 +149,78 @@ const AdminDashboard = () => {
 const DashboardHome = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  useEffect(() => {
-    console.log("DashboardHome mounted; user:", user);
-  }, [user]);
+
+  const stats = [
+    { icon: <UsersIcon />, label: "Total Users", value: "1,234" },
+    { icon: <EmployeesIcon />, label: "Employees", value: "56" },
+    { icon: <ProductsIcon />, label: "Orders Today", value: "89" },
+    { icon: <RevenueIcon />, label: "Revenue", value: "$12,456" },
+  ];
+
+  const quickActions = [
+    { icon: <UsersIcon />, label: "Manage Users", path: "/admin/users" },
+    { icon: <EmployeesIcon />, label: "Employees", path: "/admin/employees" },
+    { icon: <ProductsIcon />, label: "Products", path: "/admin/products" },
+    { icon: <ReportsIcon />, label: "Reports", path: "/admin/reports" },
+    { icon: <SettingsIcon />, label: "Settings", path: "/admin/settings" },
+    { icon: <ClerkIcon />, label: "Clerk", path: "/admin/clerk" },
+  ];
 
   return (
     <div className="dashboard-home">
-      <h2>Welcome back, {user?.name}! 👋</h2>
-      
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">👥</div>
-          <div className="stat-info">
-            <h3>Total Users</h3>
-            <p className="stat-value">-</p>
-          </div>
-        </div>
+      <div className="welcome-section">
+        <h1>Welcome back, {user?.name}!</h1>
+        <p>Here's your restaurant overview</p>
+      </div>
 
-        <div className="stat-card">
-          <div className="stat-icon">👷</div>
-          <div className="stat-info">
-            <h3>Employees</h3>
-            <p className="stat-value">-</p>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">📦</div>
-          <div className="stat-info">
-            <h3>Orders Today</h3>
-            <p className="stat-value">-</p>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">💰</div>
-          <div className="stat-info">
-            <h3>Revenue</h3>
-            <p className="stat-value">$0.00</p>
-          </div>
+      <div className="stats-section">
+        <h2>Overview</h2>
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="stat-card">
+              <div className="stat-icon">{stat.icon}</div>
+              <div className="stat-content">
+                <h3>{stat.label}</h3>
+                <p className="stat-value">{stat.value}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="quick-actions">
-        <h3>Quick Actions</h3>
+      <div className="actions-section">
+        <h2>Quick Actions</h2>
         <div className="actions-grid">
-          <button
-            className="action-card"
-            onClick={() => navigate("/admin/users")}
-          >
-            <span className="action-icon">➕</span>
-            <span>Add New User</span>
-          </button>
-          <button 
-            className="action-card"
-            onClick={() => navigate("/admin/employees")}
-          >
-            <span className="action-icon">👷</span>
-            <span>Add Employee</span>
-          </button>
-          <button 
-            className="action-card"
-            onClick={() => navigate("/admin/expenses")}  // ← Add this
-          >
-            <span className="action-icon">💰</span>
-            <span>Manage Expenses</span>
-          </button>
-          <button 
-            className="action-card"
-            onClick={() => navigate("/admin/reports")}
-          >
-            <span className="action-icon">📋</span>
-            <span>View Reports</span>
-          </button>
-          <button
-            className="action-card"
-            onClick={() => navigate("/admin/products")}
-          >
-            <span className="action-icon">📦</span>
-            <span>Manage Products</span>
-          </button>
-          <button
-            className="action-card"
-            onClick={() => navigate("/admin/clerk")}
-          >
-            <span className="action-icon">🛒</span>
-            <span>Clerk Dashboard</span>
-          </button>
+          {quickActions.map((action, index) => (
+            <button
+              key={index}
+              className="action-card"
+              onClick={() => navigate(action.path)}
+            >
+              <span className="action-icon">{action.icon}</span>
+              <span className="action-label">{action.label}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>
   );
 };
+
+
+
+const SettingsPage = () => (
+  <div className="page-content">
+    <div className="page-header">
+      <h1>
+        <SettingsIcon /> Settings
+      </h1>
+      <p>Manage your preferences</p>
+    </div>
+    <div className="page-placeholder">
+      <p>Settings panel coming soon...</p>
+    </div>
+  </div>
+);
 
 export default AdminDashboard;
