@@ -60,12 +60,20 @@ export const createProduct = async (req, res) => {
   }
 };
 
-// Update the getProducts function to handle subcategory filtering
+// Update the getProducts function to handle pagination AND POS mode
 export const getProducts = async (req, res) => {
   try {
     console.log("🔄 Fetching products with filters:", req.query);
 
-    const { subcategory, maincategory, status } = req.query;
+    const {
+      subcategory,
+      maincategory,
+      status,
+      page = 1,
+      limit = 15,
+      pos = false, // Add POS parameter for Clerk Dashboard
+    } = req.query;
+
     let filter = {};
 
     // Add subcategory filter if provided
@@ -83,15 +91,59 @@ export const getProducts = async (req, res) => {
       filter.status = status;
     }
 
+    // If POS mode is enabled (from Clerk Dashboard), return ALL products without pagination
+    if (pos === "true") {
+      const products = await Product.find(filter)
+        .populate("main_category", "name")
+        .populate("sub_category", "name")
+        .sort({ name: 1 })
+        .lean();
+
+      console.log(
+        `✅ POS Mode: Found ${products.length} products (all products)`
+      );
+
+      return res.json({
+        success: true,
+        data: products,
+        total: products.length,
+        isPOS: true,
+      });
+    }
+
+    // Regular pagination logic for admin panel
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get total count for pagination info
+    const totalProducts = await Product.countDocuments(filter);
+
+    // Get paginated products
     const products = await Product.find(filter)
       .populate("main_category", "name")
       .populate("sub_category", "name")
       .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNum)
       .lean();
 
-    console.log(`✅ Found ${products.length} products with current filters`);
+    console.log(
+      `✅ Admin Mode: Found ${products.length} products on page ${page}`
+    );
 
-    res.json({ success: true, data: products });
+    res.json({
+      success: true,
+      data: products,
+      pagination: {
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalProducts / limitNum),
+        totalProducts,
+        productsPerPage: limitNum,
+        hasNextPage: pageNum < Math.ceil(totalProducts / limitNum),
+        hasPrevPage: pageNum > 1,
+      },
+    });
   } catch (error) {
     console.error("❌ getProducts error", error);
     res.status(500).json({ success: false, message: error.message });

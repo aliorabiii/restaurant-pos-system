@@ -10,7 +10,7 @@ import {
   getSubcategories,
 } from "../services/categoryService";
 import {
-  fetchProducts,
+  fetchAllProducts, // Use the new function
   getProductsByCategory,
 } from "../services/productService";
 import { createOrder } from "../services/orderService";
@@ -60,9 +60,10 @@ const ClerkDashboard = () => {
   const loadAllProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetchProducts(token);
+      const res = await fetchAllProducts(token); // Use the new function
       if (res.success) {
         setProducts(res.data || []);
+        console.log(`✅ Loaded ${res.data?.length || 0} products for POS`);
       } else {
         console.error("Failed to load products:", res.message);
         setProducts([]);
@@ -95,7 +96,7 @@ const ClerkDashboard = () => {
       }
 
       // Load all products first, then filter by main category
-      const allProductsRes = await fetchProducts(token);
+      const allProductsRes = await fetchAllProducts(token); // Use the new function
       if (allProductsRes.success) {
         const allProducts = allProductsRes.data || [];
         // Filter products by main category
@@ -103,6 +104,9 @@ const ClerkDashboard = () => {
           (product) => product.main_category?._id === category._id
         );
         setProducts(filteredProducts);
+        console.log(
+          `✅ Filtered to ${filteredProducts.length} products for category: ${category.name}`
+        );
       }
     } catch (error) {
       console.error("Error loading category data:", error);
@@ -120,6 +124,11 @@ const ClerkDashboard = () => {
       const res = await getProductsByCategory(subcategory._id, token);
       if (res.success) {
         setProducts(res.data || []);
+        console.log(
+          `✅ Loaded ${res.data?.length || 0} products for subcategory: ${
+            subcategory.name
+          }`
+        );
       } else {
         console.error("Failed to load products by subcategory:", res.message);
         setProducts([]);
@@ -250,7 +259,7 @@ const ClerkDashboard = () => {
       {/* Products Section - 75% */}
       <div className="pos__products">
         <div className="pos__header">
-          <h2>Products</h2>
+          <h2>Products ({products.length})</h2>
           <div className="pos__filters">
             <div className="filter-group main-category-filter">
               <CategoryDropdown
@@ -278,7 +287,7 @@ const ClerkDashboard = () => {
         <div className="pos__search">
           <input
             type="text"
-            placeholder="Search products…"
+            placeholder={`Search ${products.length} products…`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="form-control"

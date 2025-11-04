@@ -7,24 +7,61 @@ const getAuthHeaders = (token) => {
   return t ? { Authorization: `Bearer ${t}` } : {};
 };
 
-export const fetchProducts = async (token) => {
+// Get products with pagination (for Admin Panel)
+export const fetchProducts = async (token, queryString = "") => {
   try {
-    console.log("Fetching products from:", `${API_BASE}/products`);
-    const res = await fetch(`${API_BASE}/products`, {
-      headers: {
-        ...getAuthHeaders(token),
-      },
-    });
-    const data = await res.json();
-    console.log("Fetch products response:", data);
-    return data;
+    const response = await fetch(
+      `${
+        import.meta.env.VITE_API_URL || "http://localhost:5000"
+      }/api/products?${queryString}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error("Fetch products error:", error);
-    return { success: false, message: error.message };
+    console.error("Error fetching products:", error);
+    throw error;
   }
 };
 
+// Get ALL products without pagination (for Clerk Dashboard POS)
+export const fetchAllProducts = async (token) => {
+  try {
+    console.log("Fetching ALL products for POS...");
 
+    const API_BASE =
+      import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const url = `${API_BASE}/products?pos=true`; // Use pos parameter
+
+    const response = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Fetch ALL products response:", data);
+    return data;
+  } catch (error) {
+    console.error("Fetch ALL products error:", error);
+    return { success: false, message: error.message };
+  }
+};
 
 export const createProduct = async (formData, token) => {
   try {
@@ -82,7 +119,6 @@ export const updateProduct = async (productId, formData, token) => {
   }
 };
 
-// ... keep the top of the file unchanged
 export const getProductById = async (productId, token) => {
   try {
     const res = await fetch(`${API_BASE}/products/${productId}`, {
@@ -99,15 +135,13 @@ export const getProductById = async (productId, token) => {
   }
 };
 
-// Add this to your existing productService.js
-
 // Get products by subcategory
 export const getProductsByCategory = async (subcategoryId, token) => {
   try {
     const response = await fetch(
       `${
         import.meta.env.VITE_API_URL || "http://localhost:5000/api"
-      }/products?subcategory=${subcategoryId}`,
+      }/products?subcategory=${subcategoryId}&pos=true`, // Add pos=true for POS mode
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -142,4 +176,3 @@ export const deleteProduct = async (productId, token) => {
     return { success: false, message: error.message };
   }
 };
-
