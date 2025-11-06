@@ -461,4 +461,12 @@
   .filter-btn {
     width: 100%;
   }
+
+  .financial-item .sublabel {
+  display: block;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 4px;
+  font-weight: 400;
+}
 }

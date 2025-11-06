@@ -6,6 +6,54 @@ import {
 import { employeesAPI } from '../services/api';
 import './ReportsPage.css';
 
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
+
+import {
+  FiDollarSign,   // Money, revenue, payments
+  FiTrendingUp,   // Growth, increase, positive trend
+  FiShoppingCart, // Orders, transactions
+  FiCheckCircle,  // Completed / success
+  FiPieChart,     // Distribution / ratio visual charts
+  FiBarChart2,    // Analytics / performance charts
+  FiBox,          // Inventory / items / products
+  FiLayers,       // Categories grouped
+  FiCreditCard,   // Payment methods / transactions
+  FiClock,        // Time / hours / scheduling
+  FiCalendar,     // Days / weeks / periodic charts
+  FiUsers,        // Employee or workforce data
+} from "react-icons/fi";
+
+
+const exportMultipleSheetsToExcel = (sheetsData, filename) => {
+  const workbook = XLSX.utils.book_new();
+
+  sheetsData.forEach(sheet => {
+    const { sheetName, data } = sheet;
+    if (data && data.length > 0) {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+
+      // Auto-fit column widths
+      const colWidths = Object.keys(data[0]).map(key => ({
+        wch: Math.max(
+          key.length,
+          ...data.map(row => (row[key] ? row[key].toString().length : 0))
+        ) + 2
+      }));
+      worksheet['!cols'] = colWidths;
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+    }
+  });
+
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+  saveAs(blob, `${filename}.xlsx`);
+};
+
+
+
 const ReportsPage = () => {
   const [dateRange, setDateRange] = useState('today');
   const [customStartDate, setCustomStartDate] = useState('');
@@ -14,8 +62,8 @@ const ReportsPage = () => {
   
   // State for all report data
   const [overviewStats, setOverviewStats] = useState(null);
-  const [revenueOverTime, setRevenueOverTime] = useState([]);
-  const [salesByCategory, setSalesByCategory] = useState([]);
+  /* const [revenueOverTime, setRevenueOverTime] = useState([]);
+  const [salesByCategory, setSalesByCategory] = useState([]); */
   const [topProducts, setTopProducts] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [salesByHour, setSalesByHour] = useState([]);
@@ -164,21 +212,88 @@ const ReportsPage = () => {
     loadAllReports();
   };
 
-  const handleExport = () => {
-    alert('Export functionality - Coming soon!');
-  };
+ const handleExport = () => {
+  const today = new Date().toISOString().split("T")[0];
+
+  const sheetsData = [];
+
+  // 1) Overview Summary
+  if (overviewStats) {
+    sheetsData.push({
+      sheetName: "Overview",
+      data: [
+        { Metric: "Total Revenue", Value: overviewStats.totalRevenue },
+        { Metric: "Subtotal", Value: overviewStats.totalSubtotal },
+        { Metric: "Total Orders", Value: overviewStats.totalOrders },
+        { Metric: "Average Order Value", Value: overviewStats.averageOrderValue },
+        { Metric: "Items Sold", Value: overviewStats.totalItemsSold },
+        { Metric: "Total Expenses", Value: expenseOverview?.totalExpenses || 0 },
+        { Metric: "Net Profit", Value: (overviewStats.totalRevenue - dailySalaryCost - totalExpenses).toFixed(2) },
+      ],
+    });
+  }
+
+  // 2) Top Products
+  sheetsData.push({
+    sheetName: "Top Products",
+    data: topProducts.map((p, index) => ({
+      Rank: index + 1,
+      Product: p.productName,
+      Quantity: p.totalQuantity,
+      Revenue: p.totalRevenue.toFixed(2),
+      Orders: p.orders,
+    })),
+  });
+
+  // 3) Top Expenses
+  sheetsData.push({
+    sheetName: "Top Expenses",
+    data: topExpenseCategories.map((e, index) => ({
+      Rank: index + 1,
+      Category: e.category,
+      Subcategory: e.subcategory,
+      Amount: e.totalAmount.toFixed(2),
+      Count: e.count,
+    })),
+  });
+
+  // 4) Sales by Day
+  sheetsData.push({
+    sheetName: "Sales by Day",
+    data: salesByDay.map(d => ({
+      Day: d.day,
+      Revenue: d.revenue,
+      Orders: d.orders,
+    })),
+  });
+
+  // 5) Sales by Hour
+  sheetsData.push({
+    sheetName: "Sales by Hour",
+    data: salesByHour.map(h => ({
+      Hour: h._id,
+      Revenue: h.revenue,
+      Orders: h.orders,
+    })),
+  });
+
+  // Export final Excel
+  exportMultipleSheetsToExcel(sheetsData, `report_${today}`);
+};
 
   // Chart colors
   const COLORS = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
   const EXPENSE_COLORS = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#06b6d4'];
 
-  // Calculate comprehensive financial data
+  // Calculate comprehensive financial data 
   const dailySalaryCost = employeeStats?.salaryEstimates?.daily || 0;
   const totalExpenses = (expenseOverview?.totalExpenses || 0);
   const grossRevenue = overviewStats?.totalRevenue || 0;
   const netProfit = grossRevenue - dailySalaryCost - totalExpenses;
   const profitMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(2) : 0;
 
+
+  
   if (loading) {
     return (
       <div className="reports-loading">
@@ -255,7 +370,7 @@ const ReportsPage = () => {
       {/* Overview Stats Cards */}
       <div className="overview-stats">
         <div className="stat-card revenue">
-          <div className="stat-icon">💰</div>
+          <FiTrendingUp size={40} />
           <div className="stat-details">
             <h3>Total Revenue</h3>
             <p className="stat-value">${grossRevenue.toFixed(2)}</p>
@@ -264,8 +379,8 @@ const ReportsPage = () => {
         </div>
 
         <div className="stat-card orders">
-          <div className="stat-icon">📦</div>
-          <div className="stat-details">
+           <FiShoppingCart size={40} />
+           <div className="stat-details">
             <h3>Total Orders</h3>
             <p className="stat-value">{overviewStats?.totalOrders || 0}</p>
             <span className="stat-label">Completed orders</span>
@@ -273,7 +388,7 @@ const ReportsPage = () => {
         </div>
 
         <div className="stat-card average">
-          <div className="stat-icon">📈</div>
+           <FiShoppingCart size={40} />
           <div className="stat-details">
             <h3>Average Order Value</h3>
             <p className="stat-value">${overviewStats?.averageOrderValue?.toFixed(2) || '0.00'}</p>
@@ -282,7 +397,7 @@ const ReportsPage = () => {
         </div>
 
         <div className="stat-card items">
-          <div className="stat-icon">🛍️</div>
+           <FiBox size={40} />
           <div className="stat-details">
             <h3>Items Sold</h3>
             <p className="stat-value">{overviewStats?.totalItemsSold || 0}</p>
@@ -292,7 +407,7 @@ const ReportsPage = () => {
 
         {/* NEW EXPENSE STAT CARD */}
         <div className="stat-card expenses">
-          <div className="stat-icon">💸</div>
+           <FiTrendingUp size={40} />
           <div className="stat-details">
             <h3>Total Expenses</h3>
             <p className="stat-value">${totalExpenses.toFixed(2)}</p>
@@ -312,7 +427,8 @@ const ReportsPage = () => {
       </div>
 
      <div className="financial-summary">
-  <h3>💼 Comprehensive Financial Summary</h3>
+      
+  <h3><FiShoppingCart size={30} /> Comprehensive Financial Summary</h3>
   <div className="financial-grid">
     <div className="financial-item">
       <span className="label">Gross Revenue:</span>

@@ -12,6 +12,7 @@ import {
   FiSettings,
   FiShoppingCart,
   FiHome,
+  FiDollarSign,
 } from "react-icons/fi";
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
@@ -33,7 +34,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   
     {
       path: '/admin/expenses',  // ← NEW: Expense Management
-      icon: '💰',
+      icon: <FiDollarSign className="nav-icon" />,
       label: 'Expense Management',
       roles: ['main_admin', 'admin', 'manager', 'accountant']
     },
