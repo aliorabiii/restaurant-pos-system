@@ -147,7 +147,7 @@ const InvoicePanel = ({ selectedItems, paymentMethod, onSaveOrder }) => {
       {selectedItems.length > 0 && (
         <div className="invoice-actions">
           <button onClick={handleSaveInvoice} className="save-invoice-btn">
-            💾 Save to Database
+             Save 
           </button>
         </div>
       )}

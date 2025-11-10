@@ -663,3 +663,262 @@ hr {
 .modal-overlay,
 [role="dialog"] { position: fixed; inset: 0; z-index: 10000; }
 */
+/* Clerk Dashboard Fullscreen Styles */
+.clerk-dashboard-fullscreen {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Clerk Header */
+.clerk-header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.clerk-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.clerk-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--brand);
+}
+
+.clerk-subtitle {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.clerk-header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.current-time {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.current-date {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.clerk-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.cashier-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cashier-label {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.cashier-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.products-count {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* Fullscreen POS Layout */
+.clerk-dashboard-fullscreen .pos {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 75% 25%;
+  gap: 20px;
+  padding: 20px;
+  min-height: calc(100vh - 80px); /* Subtract header height */
+  box-sizing: border-box;
+}
+
+/* Responsive for Clerk Dashboard */
+@media (max-width: 1024px) {
+  .clerk-dashboard-fullscreen .pos {
+    grid-template-columns: 70% 30%;
+  }
+
+  .clerk-header {
+    padding: 10px 16px;
+  }
+
+  .clerk-title {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .clerk-dashboard-fullscreen .pos {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    padding: 12px;
+    min-height: calc(100vh - 70px);
+  }
+
+  .clerk-header {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .clerk-header-left,
+  .clerk-header-right {
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .clerk-dashboard-fullscreen .pos {
+    padding: 8px;
+    gap: 12px;
+  }
+
+  .clerk-header {
+    padding: 8px 12px;
+  }
+
+  .clerk-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* Add to ClerkDashboard.css */
+.clerk-logout-btn {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+
+.clerk-logout-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+/* Add to ClerkDashboard.css */
+.clerk-nav-tabs {
+  display: flex;
+  gap: 4px;
+  background: #f8f9fa;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.nav-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-tab.active {
+  background: var(--brand);
+  color: white;
+}
+
+.nav-tab:hover:not(.active) {
+  background: #e9ecef;
+}
+
+/* Add table bar spacing */
+.clerk-dashboard-fullscreen {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure proper layout with table bar */
+.pos {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 75% 25%;
+  gap: 20px;
+  padding: 0 20px 20px 20px; /* Remove top padding since table bar is above */
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pos {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    padding: 0 12px 12px 12px;
+  }
+}
+
+.table-order-header {
+  background: #dbeafe;
+  border: 1px solid #2563eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.table-status {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.table-status.occupied {
+  background: #bbf7d0;
+  color: #166534;
+}
+
+.table-status.waiting_payment {
+  background: #fef08a;
+  color: #854d0e;
+}
+
+.order-saved-indicator {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}

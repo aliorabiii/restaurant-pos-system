@@ -1,10 +1,13 @@
 import express from "express";
 import { protect, authorize } from "../middleware/authMiddleware.js";
+
+
 import {
   createOrder,
   getOrders,
   getOrderById,
   getDailySales,
+  updateDeliveryStatus,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -37,5 +40,18 @@ router.get(
   authorize("main_admin", "admin", "manager", "accountant"),
   getOrderById
 );
+
+router.put(
+  "/:id/delivery-out",
+  authorize("main_admin", "admin", "manager", "clerk"),
+  updateDeliveryStatus("out")
+);
+
+router.put(
+  "/:id/delivery-delivered", 
+  authorize("main_admin", "admin", "manager", "clerk"),
+  updateDeliveryStatus("delivered")
+);
+
 
 export default router;

@@ -2,6 +2,14 @@ import React, { useEffect, useState, useCallback } from "react";
 import ShowProductModal from "../components/ShowProductModal";
 import EditProductModal from "../components/EditProductModal";
 import {
+  FiEye,
+  FiEdit2,
+  FiTrash2,
+  FiPlus,
+  FiFilter,
+  FiSearch,
+} from "react-icons/fi";
+import {
   fetchProducts,
   deleteProduct,
   updateProduct,
@@ -12,7 +20,6 @@ import {
   getMainCategories,
   getSubcategories,
 } from "../services/categoryService";
-import "./ProductsPage.css";
 
 export default function ProductsPage() {
   const { user } = useAuth();
@@ -35,7 +42,7 @@ export default function ProductsPage() {
   const [mainCategories, setMainCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
-  const [allCategories, setAllCategories] = useState([]); // Combined categories for lookup
+  const [allCategories, setAllCategories] = useState([]);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,7 +60,6 @@ export default function ProductsPage() {
     async (page = 1) => {
       setLoading(true);
       try {
-        // Build query parameters with pagination
         const params = new URLSearchParams();
         params.append("page", page.toString());
         params.append("limit", "15");
@@ -63,13 +69,11 @@ export default function ProductsPage() {
         if (selectedSubCategory)
           params.append("subcategory", selectedSubCategory);
         if (statusFilter) params.append("status", statusFilter);
+        if (searchTerm) params.append("search", searchTerm);
 
-        // Create the full URL with query parameters
         const API_BASE =
           import.meta.env.VITE_API_URL || "http://localhost:5000/api";
         const url = `${API_BASE}/products?${params.toString()}`;
-
-        console.log("Fetching products from:", url);
 
         const response = await fetch(url, {
           headers: {
@@ -78,9 +82,8 @@ export default function ProductsPage() {
           },
         });
 
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const res = await response.json();
 
@@ -105,7 +108,7 @@ export default function ProductsPage() {
         setLoading(false);
       }
     },
-    [token, selectedMainCategory, selectedSubCategory, statusFilter]
+    [token, selectedMainCategory, selectedSubCategory, statusFilter, searchTerm]
   );
 
   // Load main categories
@@ -115,10 +118,8 @@ export default function ProductsPage() {
       const res = await getMainCategories(token);
       if (res.success && res.data) {
         setMainCategories(res.data);
-        // Update all categories for lookup
         setAllCategories((prev) => {
           const newCategories = [...res.data];
-          // Keep existing subcategories if any
           const existingSubcategories = prev.filter(
             (cat) => !res.data.some((mainCat) => mainCat._id === cat._id)
           );
@@ -144,13 +145,11 @@ export default function ProductsPage() {
       const res = await getSubcategories(parentId, token);
       if (res.success && res.data) {
         setSubcategories(res.data);
-        // Update all categories for lookup
         setAllCategories((prev) => {
-          // Remove old subcategories for this parent
           const filtered = prev.filter(
             (cat) =>
               !res.data.some((subCat) => subCat._id === cat._id) &&
-              !cat.parent_id // Keep main categories
+              !cat.parent_id
           );
           return [...filtered, ...res.data];
         });
@@ -180,27 +179,17 @@ export default function ProductsPage() {
     }
   }, [selectedMainCategory]);
 
-  // Filter products locally for search (since we already have paginated data)
-  useEffect(() => {
-    let filtered = products;
-
-    if (searchTerm) {
-      filtered = filtered.filter((product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Note: Category and status filters are handled server-side via loadProducts
-    // This local filtering is only for search within the current page
-
-    setFilteredProducts(filtered);
-  }, [products, searchTerm]);
-
-  // Reload products when filters change (server-side filtering)
+  // Reload products when filters OR search change
   useEffect(() => {
     setCurrentPage(1);
     loadProducts(1);
-  }, [selectedMainCategory, selectedSubCategory, statusFilter, loadProducts]);
+  }, [
+    selectedMainCategory,
+    selectedSubCategory,
+    statusFilter,
+    searchTerm,
+    loadProducts,
+  ]);
 
   // Pagination handlers
   const handleNextPage = () => {
@@ -222,7 +211,6 @@ export default function ProductsPage() {
   };
 
   const handleProductCreated = (productData) => {
-    // Reload first page to show the new product
     loadProducts(1);
     setOpen(false);
   };
@@ -239,12 +227,10 @@ export default function ProductsPage() {
 
   const handleUpdateProduct = async (productId, updateData) => {
     try {
-      // Update local state immediately for better UX
       setProducts((prev) =>
         prev.map((p) => (p._id === productId ? { ...p, ...updateData } : p))
       );
       setEditModal(false);
-      // Reload current page to ensure data consistency
       await loadProducts(currentPage);
     } catch (error) {
       console.error("Error updating product:", error);
@@ -258,7 +244,6 @@ export default function ProductsPage() {
     try {
       const res = await deleteProduct(productId, token);
       if (res.success) {
-        // Reload current page to reflect deletion
         await loadProducts(currentPage);
       }
     } catch (error) {
@@ -286,36 +271,30 @@ export default function ProductsPage() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      available: { class: "status-available", text: "Available" },
-      out_of_stock: { class: "status-out-of-stock", text: "Out of Stock" },
-      unavailable: { class: "status-unavailable", text: "Unavailable" },
+      available: { class: "bg-success", text: "Available" },
+      out_of_stock: { class: "bg-danger", text: "Out of Stock" },
+      unavailable: { class: "bg-danger", text: "Unavailable" },
     };
     const config = statusConfig[status] || {
-      class: "status-unknown",
+      class: "bg-secondary",
       text: status,
     };
     return (
-      <span className={`status-badge ${config.class}`}>{config.text}</span>
+      <span className={`badge ${config.class} text-white`}>{config.text}</span>
     );
   };
 
-  // Improved category name function
   const getCategoryName = (category) => {
     if (!category) return "N/A";
 
-    // If category is already an object with name
     if (typeof category === "object" && category.name) {
       return category.name;
     }
 
-    // If category is a string ID, look it up
     if (typeof category === "string") {
-      // First check in allCategories
       const foundCategory = allCategories.find((cat) => cat._id === category);
       if (foundCategory) return foundCategory.name;
 
-      // If not found, try to find in the current product data
-      // This handles cases where the category might be populated in the product response
       const productWithCategory = products.find(
         (p) =>
           p.main_category?._id === category ||
@@ -351,47 +330,6 @@ export default function ProductsPage() {
     return "N/A";
   };
 
-  // Load all categories on component mount and when products change
-  useEffect(() => {
-    const loadAllCategories = async () => {
-      if (products.length > 0) {
-        // Extract unique category IDs from products
-        const mainCategoryIds = [
-          ...new Set(
-            products
-              .map((p) => p.main_category?._id || p.main_category)
-              .filter(Boolean)
-          ),
-        ];
-
-        const subCategoryIds = [
-          ...new Set(
-            products
-              .map((p) => p.sub_category?._id || p.sub_category)
-              .filter(Boolean)
-          ),
-        ];
-
-        // Load missing categories
-        for (const categoryId of [...mainCategoryIds, ...subCategoryIds]) {
-          if (
-            categoryId &&
-            !allCategories.find((cat) => cat._id === categoryId)
-          ) {
-            try {
-              // This would require a new API endpoint to get category by ID
-              // For now, we rely on the existing category loading
-            } catch (error) {
-              console.error("Error loading category:", error);
-            }
-          }
-        }
-      }
-    };
-
-    loadAllCategories();
-  }, [products, allCategories]);
-
   // Render pagination component
   const renderPagination = () => {
     if (paginationInfo.totalPages <= 1) return null;
@@ -404,7 +342,6 @@ export default function ProductsPage() {
       startPage + maxVisiblePages - 1
     );
 
-    // Adjust start page if we're near the end
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
@@ -414,7 +351,9 @@ export default function ProductsPage() {
         <button
           key={i}
           onClick={() => handlePageClick(i)}
-          className={`pagination-btn ${currentPage === i ? "active" : ""}`}
+          className={`btn btn-sm ${
+            currentPage === i ? "btn-primary" : "btn-outline-secondary border-0"
+          }`}
           disabled={loading}
         >
           {i}
@@ -422,282 +361,412 @@ export default function ProductsPage() {
       );
     }
 
+    const resultsInfo = `Showing ${filteredProducts.length} of ${paginationInfo.totalProducts} products`;
+
     return (
-      <div className="pagination-container">
-        <button
-          onClick={handlePrevPage}
-          disabled={!paginationInfo.hasPrevPage || loading}
-          className="pagination-btn pagination-prev"
-        >
-          Previous
-        </button>
+      <div className="d-flex justify-content-between align-items-center mt-3 px-3 py-2 bg-light rounded">
+        <div className="text-muted small">{resultsInfo}</div>
+        <div className="d-flex align-items-center gap-1">
+          <button
+            onClick={handlePrevPage}
+            disabled={!paginationInfo.hasPrevPage || loading}
+            className="btn btn-sm btn-outline-secondary border-0"
+          >
+            ‹
+          </button>
 
-        {startPage > 1 && (
-          <>
-            <button
-              onClick={() => handlePageClick(1)}
-              className="pagination-btn"
-              disabled={loading}
-            >
-              1
-            </button>
-            {startPage > 2 && <span className="pagination-ellipsis">...</span>}
-          </>
-        )}
+          {startPage > 1 && (
+            <>
+              <button
+                onClick={() => handlePageClick(1)}
+                className="btn btn-sm btn-outline-secondary border-0"
+                disabled={loading}
+              >
+                1
+              </button>
+              {startPage > 2 && <span className="px-1 text-muted">...</span>}
+            </>
+          )}
 
-        {pages}
+          {pages}
 
-        {endPage < paginationInfo.totalPages && (
-          <>
-            {endPage < paginationInfo.totalPages - 1 && (
-              <span className="pagination-ellipsis">...</span>
-            )}
-            <button
-              onClick={() => handlePageClick(paginationInfo.totalPages)}
-              className="pagination-btn"
-              disabled={loading}
-            >
-              {paginationInfo.totalPages}
-            </button>
-          </>
-        )}
+          {endPage < paginationInfo.totalPages && (
+            <>
+              {endPage < paginationInfo.totalPages - 1 && (
+                <span className="px-1 text-muted">...</span>
+              )}
+              <button
+                onClick={() => handlePageClick(paginationInfo.totalPages)}
+                className="btn btn-sm btn-outline-secondary border-0"
+                disabled={loading}
+              >
+                {paginationInfo.totalPages}
+              </button>
+            </>
+          )}
 
-        <button
-          onClick={handleNextPage}
-          disabled={!paginationInfo.hasNextPage || loading}
-          className="pagination-btn pagination-next"
-        >
-          Next
-        </button>
+          <button
+            onClick={handleNextPage}
+            disabled={!paginationInfo.hasNextPage || loading}
+            className="btn btn-sm btn-outline-secondary border-0"
+          >
+            ›
+          </button>
+        </div>
       </div>
     );
   };
 
-  // Results information
-  const resultsInfo = `Showing ${filteredProducts.length} products on page ${currentPage} of ${paginationInfo.totalPages} (Total: ${paginationInfo.totalProducts} products)`;
-
   return (
-    <div className="products-page">
-      <div className="page-header">
-        <h2>Products Management</h2>
-        <button className="add-product-btn" onClick={() => setOpen(true)}>
-          + Add New Product
-        </button>
+    <div className="container-fluid py-3">
+      {/* Header Section */}
+      <div className="row mb-3">
+        <div className="col">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <h1 className="h4 mb-1 text-dark fw-bold">Products Management</h1>
+              <p className="text-muted mb-0 small">
+                Manage your product inventory and listings
+              </p>
+            </div>
+            <button
+              className="btn btn-primary btn-sm d-flex align-items-center gap-2"
+              onClick={() => setOpen(true)}
+            >
+              <FiPlus size={14} />
+              Add New Product
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Filters Section */}
-      <div className="filters-section">
-        <div className="filters-header">
-          <h3>Filters & Search</h3>
-          <button className="clear-filters-btn" onClick={clearFilters}>
-            Clear All
-          </button>
-        </div>
+      {/* Filters Section - Improved Layout */}
+      <div className="row mb-3">
+        <div className="col">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body py-3">
+              <div className="row g-3 align-items-end">
+                {/* First Row: Search and Status */}
+                <div className="col-md-6">
+                  <div className="row g-2 align-items-end">
+                    <div className="col-md-8">
+                      <label className="form-label fw-semibold text-dark mb-1 small">
+                        <FiSearch className="me-1" size={12} />
+                        Search Products
+                      </label>
+                      <div className="input-group input-group-sm">
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder="Search by product name..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-4">
+                      <label className="form-label fw-semibold text-dark mb-1 small">
+                        Status
+                      </label>
+                      <select
+                        className="form-select form-select-sm"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="out_of_stock">Out of Stock</option>
+                        <option value="unavailable">Unavailable</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
 
-        <div className="filters-grid">
-          <div className="filter-group">
-            <label>Search Products</label>
-            <input
-              type="text"
-              placeholder="Search by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
+                {/* Second Row: Categories */}
+                <div className="col-md-5">
+                  <div className="row g-2 align-items-end">
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark mb-1 small">
+                        Main Category
+                      </label>
+                      <select
+                        className="form-select form-select-sm"
+                        value={selectedMainCategory}
+                        onChange={(e) =>
+                          setSelectedMainCategory(e.target.value)
+                        }
+                      >
+                        <option value="">All Categories</option>
+                        {mainCategories.map((category) => (
+                          <option key={category._id} value={category._id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-dark mb-1 small">
+                        Sub Category
+                      </label>
+                      <select
+                        className="form-select form-select-sm"
+                        value={selectedSubCategory}
+                        onChange={(e) => setSelectedSubCategory(e.target.value)}
+                        disabled={!selectedMainCategory}
+                      >
+                        <option value="">All Sub Categories</option>
+                        {subcategories.map((category) => (
+                          <option key={category._id} value={category._id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                <div className="col-md-1">
+                  <button
+                    className="btn btn-outline-secondary btn-sm w-100 d-flex align-items-center justify-content-center gap-1"
+                    onClick={clearFilters}
+                    title="Clear all filters"
+                  >
+                    <FiFilter size={12} />
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div className="filter-group">
-            <label>Main Category</label>
-            <select
-              value={selectedMainCategory}
-              onChange={(e) => setSelectedMainCategory(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">All Main Categories</option>
-              {mainCategories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Sub Category</label>
-            <select
-              value={selectedSubCategory}
-              onChange={(e) => setSelectedSubCategory(e.target.value)}
-              disabled={!selectedMainCategory}
-              className="filter-select"
-            >
-              <option value="">All Sub Categories</option>
-              {subcategories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Status</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">All Status</option>
-              <option value="available">Available</option>
-              <option value="out_of_stock">Out of Stock</option>
-              <option value="unavailable">Unavailable</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="results-info">
-          {resultsInfo}
-          {(searchTerm ||
-            selectedMainCategory ||
-            selectedSubCategory ||
-            statusFilter) && (
-            <span className="active-filters">• Filters active</span>
-          )}
         </div>
       </div>
 
       {/* Products Table */}
-      {loading ? (
-        <div className="loading-state">Loading products...</div>
-      ) : filteredProducts.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">🔍</div>
-          <h3>No products found</h3>
-          <p>
-            {paginationInfo.totalProducts === 0
-              ? "Create your first product"
-              : "Try adjusting filters"}
-          </p>
-          {paginationInfo.totalProducts === 0 ? (
-            <button className="add-product-btn" onClick={() => setOpen(true)}>
-              + Add Product
-            </button>
-          ) : (
-            <button className="clear-filters-btn" onClick={clearFilters}>
-              Clear Filters
-            </button>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className="products-table-container">
-            <table className="products-table">
-              <thead>
-                <tr>
-                  <th className="image-col">Image</th>
-                  <th className="name-col">Product Name</th>
-                  <th className="category-col">Main Category</th>
-                  <th className="category-col">Sub Category</th>
-                  <th className="price-col">Price</th>
-                  <th className="sizes-col">Sizes</th>
-                  <th className="status-col">Status</th>
-                  <th className="actions-col">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => (
-                  <tr key={product._id} className="product-row">
-                    <td>
-                      <div className="product-image-wrapper">
-                        <img
-                          src={
-                            product.images?.length
-                              ? imageBase(product.images[0])
-                              : "/placeholder.png"
-                          }
-                          alt={product.name}
-                          className="product-table-image"
-                        />
-                      </div>
-                    </td>
-                    <td>
-                      <div className="product-name">{product.name}</div>
-                    </td>
-                    <td>
-                      <div className="category-name">
-                        {getCategoryName(product.main_category)}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="category-name">
-                        {getCategoryName(product.sub_category)}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="base-price">
-                        ${product.base_price?.toFixed(2) || "0.00"}
-                      </div>
-                      {product.prep_time_minutes && (
-                        <div className="prep-time">
-                          {product.prep_time_minutes} min
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      {product.has_sizes && product.variants?.length > 0 ? (
-                        <div className="size-prices">
-                          {product.variants
-                            .slice(0, 3)
-                            .map((variant, index) => (
-                              <div key={index} className="size-price-item">
-                                <span className="size-label">
-                                  {variant.size.charAt(0).toUpperCase()}
-                                </span>
-                                <span className="size-price">
-                                  ${variant.price?.toFixed(2)}
-                                </span>
+      <div className="row">
+        <div className="col">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body p-0">
+              {loading ? (
+                <div className="text-center py-5">
+                  <div
+                    className="spinner-border spinner-border-sm text-primary"
+                    role="status"
+                  >
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2 text-muted small">Loading products...</p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="text-center py-4">
+                  <div className="mb-2">
+                    <FiSearch size={32} className="text-muted" />
+                  </div>
+                  <h6 className="text-dark mb-1">No products found</h6>
+                  <p className="text-muted small mb-3">
+                    {paginationInfo.totalProducts === 0
+                      ? "Get started by creating your first product"
+                      : "Try adjusting your search or filters"}
+                  </p>
+                  {paginationInfo.totalProducts === 0 ? (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => setOpen(true)}
+                    >
+                      <FiPlus className="me-1" size={12} />
+                      Add Your First Product
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={clearFilters}
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="table-responsive">
+                    <table className="table table-sm table-hover mb-0">
+                      <thead className="bg-light">
+                        <tr>
+                          <th
+                            scope="col"
+                            className="ps-3 py-2 text-dark fw-semibold small text-uppercase"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Product Name
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-2 text-dark fw-semibold small text-uppercase"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Main Category
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-2 text-dark fw-semibold small text-uppercase"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Sub Category
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-2 text-dark fw-semibold small text-uppercase"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Price
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-2 text-dark fw-semibold small text-uppercase"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Sizes
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-2 text-dark fw-semibold small text-uppercase"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Status
+                          </th>
+                          <th
+                            scope="col"
+                            className="pe-3 py-2 text-dark fw-semibold small text-uppercase text-center"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredProducts.map((product) => (
+                          <tr key={product._id} className="border-top">
+                            <td className="ps-3 py-2">
+                              <div
+                                className="fw-semibold text-dark small"
+                                style={{ fontSize: "0.825rem" }}
+                              >
+                                {product.name}
                               </div>
-                            ))}
-                        </div>
-                      ) : (
-                        <span className="no-sizes">No sizes</span>
-                      )}
-                    </td>
-                    <td>{getStatusBadge(product.status)}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          onClick={() => handleShowProduct(product)}
-                          className="action-btn view-btn"
-                          title="View"
-                        >
-                          👁️
-                        </button>
-                        <button
-                          onClick={() => handleEditProduct(product)}
-                          className="action-btn edit-btn"
-                          title="Edit"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => handleDeleteProduct(product._id)}
-                          className="action-btn delete-btn"
-                          title="Delete"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                            </td>
+                            <td className="py-2">
+                              <span
+                                className="text-dark small"
+                                style={{ fontSize: "0.825rem" }}
+                              >
+                                {getCategoryName(product.main_category)}
+                              </span>
+                            </td>
+                            <td className="py-2">
+                              <span
+                                className="text-dark small"
+                                style={{ fontSize: "0.825rem" }}
+                              >
+                                {getCategoryName(product.sub_category)}
+                              </span>
+                            </td>
+                            <td className="py-2">
+                              <div
+                                className="fw-bold text-dark small"
+                                style={{ fontSize: "0.825rem" }}
+                              >
+                                ${product.base_price?.toFixed(2) || "0.00"}
+                              </div>
+                              {product.prep_time_minutes && (
+                                <small
+                                  className="text-muted"
+                                  style={{ fontSize: "0.7rem" }}
+                                >
+                                  {product.prep_time_minutes} min
+                                </small>
+                              )}
+                            </td>
+                            <td className="py-2">
+                              {product.has_sizes &&
+                              product.variants?.length > 0 ? (
+                                <div className="d-flex flex-column gap-0">
+                                  {product.variants
+                                    .slice(0, 3)
+                                    .map((variant, index) => (
+                                      <div
+                                        key={index}
+                                        className="d-flex justify-content-between align-items-center"
+                                      >
+                                        <small
+                                          className="text-uppercase fw-semibold text-dark"
+                                          style={{ fontSize: "0.7rem" }}
+                                        >
+                                          {variant.size.charAt(0)}
+                                        </small>
+                                        <small
+                                          className="text-dark"
+                                          style={{ fontSize: "0.7rem" }}
+                                        >
+                                          ${variant.price?.toFixed(2)}
+                                        </small>
+                                      </div>
+                                    ))}
+                                </div>
+                              ) : (
+                                <span
+                                  className="text-muted small"
+                                  style={{ fontSize: "0.825rem" }}
+                                >
+                                  No sizes
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2">
+                              {getStatusBadge(product.status)}
+                            </td>
+                            <td className="pe-3 py-2">
+                              <div className="d-flex justify-content-center gap-1">
+                                <button
+                                  onClick={() => handleShowProduct(product)}
+                                  className="btn btn-sm btn-outline-primary d-flex align-items-center p-1"
+                                  title="View"
+                                  style={{ fontSize: "0.7rem" }}
+                                >
+                                  <FiEye size={12} />
+                                </button>
+                                <button
+                                  onClick={() => handleEditProduct(product)}
+                                  className="btn btn-sm btn-outline-warning d-flex align-items-center p-1"
+                                  title="Edit"
+                                  style={{ fontSize: "0.7rem" }}
+                                >
+                                  <FiEdit2 size={12} />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleDeleteProduct(product._id)
+                                  }
+                                  className="btn btn-sm btn-outline-danger d-flex align-items-center p-1"
+                                  title="Delete"
+                                  style={{ fontSize: "0.7rem" }}
+                                >
+                                  <FiTrash2 size={12} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
-          {/* Pagination */}
-          {renderPagination()}
-        </>
-      )}
+                  {/* Pagination with Results Info */}
+                  {renderPagination()}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Modals */}
       {showModal && (

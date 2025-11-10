@@ -71,27 +71,22 @@ export const getProducts = async (req, res) => {
       status,
       page = 1,
       limit = 15,
-      pos = false, // Add POS parameter for Clerk Dashboard
+      pos = false,
+      search = "", // 👈 NEW
     } = req.query;
 
     let filter = {};
 
-    // Add subcategory filter if provided
-    if (subcategory) {
-      filter.sub_category = subcategory;
+    if (subcategory) filter.sub_category = subcategory;
+    if (maincategory) filter.main_category = maincategory;
+    if (status) filter.status = status;
+
+    // 👇 NEW: name search (case-insensitive)
+    if (search && typeof search === "string") {
+      filter.name = { $regex: search.trim(), $options: "i" };
     }
 
-    // Add main category filter if provided
-    if (maincategory) {
-      filter.main_category = maincategory;
-    }
-
-    // Add status filter if provided
-    if (status) {
-      filter.status = status;
-    }
-
-    // If POS mode is enabled (from Clerk Dashboard), return ALL products without pagination
+    // POS mode: still apply filters, but no pagination
     if (pos === "true") {
       const products = await Product.find(filter)
         .populate("main_category", "name")
@@ -116,10 +111,8 @@ export const getProducts = async (req, res) => {
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Get total count for pagination info
     const totalProducts = await Product.countDocuments(filter);
 
-    // Get paginated products
     const products = await Product.find(filter)
       .populate("main_category", "name")
       .populate("sub_category", "name")

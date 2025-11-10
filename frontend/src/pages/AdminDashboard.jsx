@@ -1,14 +1,14 @@
+// frontend/src/pages/AdminDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { Link, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import Sidebar from '../components/Sidebar';
-import UserManagement from '../components/UserManagement';
-import EmployeeManagement from './EmployeeManagement';
-import ExpensePage from './ExpensePage';  // ← Add this import
-import './AdminDashboard.css';
+import Sidebar from "../components/Sidebar";
+import UserManagement from "../components/UserManagement";
+import EmployeeManagement from "./EmployeeManagement";
+import ExpensePage from "./ExpensePage";
+import "./AdminDashboard.css";
 
 import { useAuth } from "../context/AuthContext";
 import ProductsPage from "./ProductsPage";
-import ClerkDashboard from "./ClerkDashboard";
 import ReportsPage from "./ReportsPage.jsx";
 
 // React Icons imports
@@ -134,10 +134,9 @@ const AdminDashboard = () => {
             <Route path="/" element={<DashboardHome />} />
             <Route path="/users" element={<UserManagement />} />
             <Route path="/employees" element={<EmployeeManagement />} />
-            <Route path="/expenses" element={<ExpensePage />} />  {/* ← Add this route */}
+            <Route path="/expenses" element={<ExpensePage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="clerk" element={<ClerkDashboard />} />
-            <Route path="products" element={<ProductsPage />} />
+            <Route path="/products" element={<ProductsPage />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </main>
@@ -163,7 +162,7 @@ const DashboardHome = () => {
     { icon: <ProductsIcon />, label: "Products", path: "/admin/products" },
     { icon: <ReportsIcon />, label: "Reports", path: "/admin/reports" },
     { icon: <SettingsIcon />, label: "Settings", path: "/admin/settings" },
-    { icon: <ClerkIcon />, label: "Clerk", path: "/admin/clerk" },
+    { icon: <ClerkIcon />, label: "Clerk", path: "/clerk" }, // CHANGED: Now points to /clerk
   ];
 
   return (
@@ -206,8 +205,6 @@ const DashboardHome = () => {
     </div>
   );
 };
-
-
 
 const SettingsPage = () => (
   <div className="page-content">

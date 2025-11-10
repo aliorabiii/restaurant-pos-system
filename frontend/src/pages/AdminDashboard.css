@@ -11,6 +11,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root {
+  --sidebar-expanded: 260px; /* set this to your actual expanded width */
+  --sidebar-collapsed: 72px; /* set this to your actual collapsed width */
+}
+
 /* Main Content */
 .main-content {
   flex: 1;
@@ -20,15 +25,16 @@
   min-width: 0;
 }
 
+/* Use variables so margins match the real sidebar width */
 .main-content.sidebar-expanded {
-  margin-left: 100px;
+  margin-left: var(--sidebar-expanded);
 }
 
 .main-content.sidebar-collapsed {
-  margin-left: 70px; /* Small space for collapsed sidebar */
+  margin-left: var(--sidebar-collapsed);
 }
 
-/* Header Styles */
+/* Header: keep it above the sidebar so the menu button is always clickable */
 .dashboard-header {
   background: white;
   padding: 1rem 1.25rem;
@@ -38,7 +44,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   position: sticky;
   top: 0;
-  z-index: 1; /* header stays under any modal overlay */
+  z-index: 1; /* was 1; raise above sidebar */
   border-bottom: 1px solid #e9e9ee;
 }
 
@@ -62,6 +68,8 @@
   width: 44px;
   height: 44px;
   font-size: 1.05rem;
+  position: relative;
+  z-index: 1001;
 }
 
 .menu-toggle:active {

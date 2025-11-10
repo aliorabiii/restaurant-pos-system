@@ -30,6 +30,22 @@ const orderItemSchema = new mongoose.Schema({
   },
 });
 
+// Add delivery timestamps schema
+const deliveryTimestampsSchema = new mongoose.Schema({
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  outAt: {
+    type: Date,
+    default: null,
+  },
+  deliveredAt: {
+    type: Date,
+    default: null,
+  },
+});
+
 const orderSchema = new mongoose.Schema(
   {
     orderNumber: {
@@ -55,9 +71,43 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    tip: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    orderType: {
+      type: String,
+      enum: ["inside", "delivery"],
+      default: "inside",
+    },
+    deliveryInfo: {
+      customerName: {
+        type: String,
+        default: null,
+      },
+      customerPhone: {
+        type: String,
+        default: null,
+      },
+      customerAddress: {
+        type: String,
+        default: null,
+      },
+      deliveryCost: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+    },
+    // MAKE DELIVERY TIMESTAMPS OPTIONAL
+    deliveryTimestamps: {
+      type: deliveryTimestampsSchema,
+      default: null, // Set default to null instead of empty object
+    },
     paymentMethod: {
       type: String,
-      enum: ["cash", "credit_card", "mobile"], // Add "mobile"
+      enum: ["cash", "credit_card", "mobile"],
       required: true,
     },
     status: {
@@ -83,5 +133,6 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ status: 1 });
+orderSchema.index({ orderType: 1 }); // Add index for orderType
 
 export default mongoose.model("Order", orderSchema);

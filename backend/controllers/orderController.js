@@ -151,3 +151,91 @@ export const getDailySales = async (req, res) => {
     });
   }
 };
+
+
+
+// Update delivery status
+export const updateDeliveryStatus = (action) => async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log(
+      `🔄 Updating delivery status for order ${id}, action: ${action}`
+    );
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.orderType !== "delivery") {
+      return res.status(400).json({
+        success: false,
+        message: "Not a delivery order",
+      });
+    }
+
+    const now = new Date();
+    let updateData = {};
+
+    // Initialize deliveryTimestamps if it doesn't exist
+    if (!order.deliveryTimestamps) {
+      order.deliveryTimestamps = {
+        createdAt: order.createdAt,
+        outAt: null,
+        deliveredAt: null,
+      };
+      await order.save();
+    }
+
+    if (action === "out") {
+      // Set outAt time
+      updateData = {
+        "deliveryTimestamps.outAt": now,
+      };
+      console.log(`✅ Setting outAt to: ${now}`);
+    } else if (action === "delivered") {
+      // Verify that outAt exists before setting deliveredAt
+      if (!order.deliveryTimestamps.outAt) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Cannot mark as delivered before marking as out for delivery",
+        });
+      }
+      updateData = {
+        "deliveryTimestamps.deliveredAt": now,
+      };
+      console.log(`✅ Setting deliveredAt to: ${now}`);
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action",
+      });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).populate("items.productId");
+
+    console.log(`✅ Successfully updated order ${id}`);
+
+    res.json({
+      success: true,
+      message: `Delivery status updated successfully`,
+      data: updatedOrder,
+    });
+  } catch (error) {
+    console.error("❌ Error updating delivery status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating delivery status",
+      error: error.message,
+    });
+  }
+};

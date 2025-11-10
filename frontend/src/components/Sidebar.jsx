@@ -1,3 +1,4 @@
+// frontend/src/components/Sidebar.jsx
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Sidebar.css";
@@ -31,12 +32,11 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       label: "User Management",
       roles: ["main_admin", "admin"],
     },
-  
     {
-      path: '/admin/expenses',  // ← NEW: Expense Management
+      path: "/admin/expenses",
       icon: <FiDollarSign className="nav-icon" />,
-      label: 'Expense Management',
-      roles: ['main_admin', 'admin', 'manager', 'accountant']
+      label: "Expense Management",
+      roles: ["main_admin", "admin", "manager", "accountant"],
     },
     {
       path: "/admin/employees",
@@ -45,7 +45,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       roles: ["main_admin", "admin", "manager"],
     },
     {
-      path: "/admin/clerk",
+      path: "/clerk", // CHANGED: Now points to separate route
       icon: <FiShoppingCart className="nav-icon" />,
       label: "Clerk Dashboard",
       roles: ["main_admin", "admin", "manager", "clerk"],

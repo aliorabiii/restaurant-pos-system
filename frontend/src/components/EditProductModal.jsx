@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { X, Save } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { updateProduct, getProductById } from "../services/productService";
 import {
   getMainCategories,
   getSubcategories,
 } from "../services/categoryService";
-import "./EditProductModal.css";
 
 const EditProductModal = ({
   product,
@@ -30,6 +30,7 @@ const EditProductModal = ({
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
 
   // Categories state
   const [mainCategories, setMainCategories] = useState([]);
@@ -300,77 +301,233 @@ const EditProductModal = ({
 
       if (res.success) {
         onUpdate(product._id, res.data);
+        handleClose();
       } else {
-        alert(res?.message || "Failed to update product");
+        setSubmitError(res?.message || "Failed to update product");
       }
     } catch (error) {
       console.error("Update product error:", error);
-      alert(`Failed to update product: ${error.message}`);
+      setSubmitError(`Failed to update product: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleClose = () => {
+    setFormData({
+      name: "",
+      main_category: "",
+      sub_category: "",
+      short_description: "",
+      base_price: "",
+      status: "available",
+      prep_time_minutes: "",
+      has_sizes: false,
+    });
+    setImages([]);
+    setVariants([
+      { size: "small", price: "" },
+      { size: "medium", price: "" },
+      { size: "large", price: "" },
+    ]);
+    setErrors({});
+    setSubmitError("");
+    setLoading(false);
+    onClose();
+  };
+
+  const stop = (e) => e.stopPropagation();
+
   if (!product) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="edit-product-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Edit Product</h2>
-          <button onClick={onClose} className="close-btn" disabled={loading}>
-            ✕
+    <div
+      className="modal-overlay"
+      onClick={handleClose}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+      }}
+    >
+      <div
+        className="modal-content-wrapper"
+        onClick={stop}
+        style={{
+          backgroundColor: "white",
+          borderRadius: "8px",
+          width: "85%",
+          maxWidth: "650px",
+          maxHeight: "85vh",
+          overflow: "auto",
+          zIndex: 10000,
+        }}
+      >
+        <div
+          className="modal-header"
+          style={{
+            padding: "1rem 1.5rem",
+            borderBottom: "1px solid #e5e7eb",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <h5
+            className="modal-title"
+            style={{ margin: 0, fontSize: "1.25rem", fontWeight: "600" }}
+          >
+            Edit Product
+          </h5>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={loading}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "4px",
+              borderRadius: "4px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onMouseOver={(e) => (e.target.style.backgroundColor = "#f3f4f6")}
+            onMouseOut={(e) => (e.target.style.backgroundColor = "transparent")}
+          >
+            <X size={20} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="modal-content">
-            {/* Current Image Preview */}
-            {product.images && product.images.length > 0 && (
-              <div className="current-image-section">
-                <label>Current Image</label>
-                <div className="image-preview">
-                  <img
-                    src={imageBase(product.images[0])}
-                    alt={product.name}
-                    className="current-image"
-                  />
-                </div>
+        <div className="modal-body" style={{ padding: "1.5rem" }}>
+          {submitError && (
+            <div
+              style={{
+                padding: "0.75rem",
+                backgroundColor: "#fef2f2",
+                border: "1px solid #fecaca",
+                borderRadius: "6px",
+                color: "#dc2626",
+                marginBottom: "1rem",
+              }}
+            >
+              {submitError}
+            </div>
+          )}
+
+          {/* Current Image Preview */}
+          {product.images && product.images.length > 0 && (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label
+                style={{
+                  display: "block",
+                  fontWeight: "600",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Current Image
+              </label>
+              <div
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "6px",
+                  padding: "0.5rem",
+                  display: "inline-block",
+                }}
+              >
+                <img
+                  src={imageBase(product.images[0])}
+                  alt={product.name}
+                  style={{
+                    width: "100px",
+                    height: "100px",
+                    objectFit: "cover",
+                    borderRadius: "4px",
+                  }}
+                />
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Form Fields */}
-            <div className="form-section">
-              <h3>Basic Information</h3>
-
-              <div className="form-group">
-                <label htmlFor="name">Product Name *</label>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: "grid", gap: "1rem" }}>
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "600",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Product Name <span style={{ color: "#dc2626" }}>*</span>
+                </label>
                 <input
                   type="text"
-                  id="name"
                   name="name"
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    border: `1px solid ${errors.name ? "#dc2626" : "#d1d5db"}`,
+                    borderRadius: "6px",
+                    fontSize: "0.875rem",
+                  }}
+                  placeholder="Enter product name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  required
                   disabled={loading}
-                  className={errors.name ? "error" : ""}
                 />
                 {errors.name && (
-                  <span className="error-text">{errors.name}</span>
+                  <div
+                    style={{
+                      color: "#dc2626",
+                      fontSize: "0.875rem",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    {errors.name}
+                  </div>
                 )}
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="main_category">Main Category *</label>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "1rem",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Main Category <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
                   <select
-                    id="main_category"
                     name="main_category"
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem 0.75rem",
+                      border: `1px solid ${
+                        errors.main_category ? "#dc2626" : "#d1d5db"
+                      }`,
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    }}
                     value={formData.main_category}
                     onChange={handleInputChange}
-                    required
                     disabled={loading || categoriesLoading}
-                    className={errors.main_category ? "error" : ""}
                   >
                     <option value="">Select main category</option>
                     {mainCategories.map((cat) => (
@@ -380,25 +537,55 @@ const EditProductModal = ({
                     ))}
                   </select>
                   {errors.main_category && (
-                    <span className="error-text">{errors.main_category}</span>
+                    <div
+                      style={{
+                        color: "#dc2626",
+                        fontSize: "0.875rem",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {errors.main_category}
+                    </div>
                   )}
                   {categoriesLoading && (
-                    <span className="loading-text">Loading categories...</span>
+                    <div
+                      style={{
+                        fontSize: "0.875rem",
+                        color: "#6b7280",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      Loading categories...
+                    </div>
                   )}
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="sub_category">Sub Category *</label>
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Sub Category <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
                   <select
-                    id="sub_category"
                     name="sub_category"
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem 0.75rem",
+                      border: `1px solid ${
+                        errors.sub_category ? "#dc2626" : "#d1d5db"
+                      }`,
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    }}
                     value={formData.sub_category}
                     onChange={handleInputChange}
-                    required
                     disabled={
                       loading || categoriesLoading || !formData.main_category
                     }
-                    className={errors.sub_category ? "error" : ""}
                   >
                     <option value="">
                       {formData.main_category
@@ -414,142 +601,327 @@ const EditProductModal = ({
                     ))}
                   </select>
                   {errors.sub_category && (
-                    <span className="error-text">{errors.sub_category}</span>
+                    <div
+                      style={{
+                        color: "#dc2626",
+                        fontSize: "0.875rem",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {errors.sub_category}
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Base Price */}
-              <div className="form-group">
-                <label htmlFor="base_price">Base Price *</label>
-                <input
-                  type="number"
-                  id="base_price"
-                  name="base_price"
-                  step="0.01"
-                  min="0"
-                  value={formData.base_price}
-                  onChange={handleInputChange}
-                  disabled={loading}
-                  className={errors.base_price ? "error" : ""}
-                />
-                {errors.base_price && (
-                  <span className="error-text">{errors.base_price}</span>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="short_description">Description</label>
-                <textarea
-                  id="short_description"
-                  name="short_description"
-                  value={formData.short_description}
-                  onChange={handleInputChange}
-                  rows="3"
-                  maxLength={140}
-                  disabled={loading}
-                />
-                <div className="char-count">
-                  {formData.short_description.length}/140
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "1rem",
+                }}
+              >
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Base Price <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
+                  <div style={{ display: "flex" }}>
+                    <span
+                      style={{
+                        padding: "0.5rem 0.75rem",
+                        backgroundColor: "#f9fafb",
+                        border: `1px solid ${
+                          errors.base_price ? "#dc2626" : "#d1d5db"
+                        }`,
+                        borderRight: "none",
+                        borderRadius: "6px 0 0 6px",
+                        fontSize: "0.875rem",
+                        color: "#6b7280",
+                      }}
+                    >
+                      $
+                    </span>
+                    <input
+                      type="number"
+                      name="base_price"
+                      step="0.01"
+                      min="0"
+                      style={{
+                        flex: 1,
+                        padding: "0.5rem 0.75rem",
+                        border: `1px solid ${
+                          errors.base_price ? "#dc2626" : "#d1d5db"
+                        }`,
+                        borderLeft: "none",
+                        borderRadius: "0 6px 6px 0",
+                        fontSize: "0.875rem",
+                      }}
+                      placeholder="0.00"
+                      value={formData.base_price}
+                      onChange={handleInputChange}
+                      disabled={loading}
+                    />
+                  </div>
+                  {errors.base_price && (
+                    <div
+                      style={{
+                        color: "#dc2626",
+                        fontSize: "0.875rem",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {errors.base_price}
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="status">Status *</label>
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Status <span style={{ color: "#dc2626" }}>*</span>
+                  </label>
                   <select
-                    id="status"
                     name="status"
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem 0.75rem",
+                      border: `1px solid ${
+                        errors.status ? "#dc2626" : "#d1d5db"
+                      }`,
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                    }}
                     value={formData.status}
                     onChange={handleInputChange}
-                    required
                     disabled={loading}
-                    className={errors.status ? "error" : ""}
                   >
                     <option value="available">Available</option>
                     <option value="out_of_stock">Out of Stock</option>
                     <option value="unavailable">Unavailable</option>
                   </select>
                   {errors.status && (
-                    <span className="error-text">{errors.status}</span>
+                    <div
+                      style={{
+                        color: "#dc2626",
+                        fontSize: "0.875rem",
+                        marginTop: "0.25rem",
+                      }}
+                    >
+                      {errors.status}
+                    </div>
                   )}
                 </div>
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="prep_time_minutes">Prep Time (minutes)</label>
-                  <input
-                    type="number"
-                    id="prep_time_minutes"
-                    name="prep_time_minutes"
-                    value={formData.prep_time_minutes}
-                    onChange={handleInputChange}
-                    disabled={loading}
-                    placeholder="e.g., 15"
-                  />
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "600",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Description
+                </label>
+                <textarea
+                  name="short_description"
+                  rows="3"
+                  maxLength={140}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "0.875rem",
+                    resize: "vertical",
+                  }}
+                  placeholder="Brief description (optional)"
+                  value={formData.short_description}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                />
+                <div
+                  style={{
+                    fontSize: "0.875rem",
+                    color: "#6b7280",
+                    textAlign: "right",
+                    marginTop: "0.25rem",
+                  }}
+                >
+                  {formData.short_description.length}/140
                 </div>
               </div>
-            </div>
 
-            {/* Size Options */}
-            <div className="form-section">
-              <h3>Size Options</h3>
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "600",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Prep Time (minutes)
+                </label>
+                <input
+                  type="number"
+                  name="prep_time_minutes"
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "0.875rem",
+                  }}
+                  placeholder="e.g., 15"
+                  value={formData.prep_time_minutes}
+                  onChange={handleInputChange}
+                  disabled={loading}
+                />
+              </div>
 
-              <div className="form-group checkbox-group">
-                <label className="checkbox-label">
+              <div>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    cursor: "pointer",
+                  }}
+                >
                   <input
                     type="checkbox"
+                    id="has_sizes"
                     name="has_sizes"
                     checked={formData.has_sizes}
                     onChange={handleInputChange}
                     disabled={loading}
+                    style={{ margin: 0 }}
                   />
-                  <span className="checkmark"></span>
-                  This product has different sizes (Small, Medium, Large)
+                  <span style={{ fontWeight: "600" }}>
+                    This product has different sizes (Small, Medium, Large)
+                  </span>
                 </label>
               </div>
 
               {formData.has_sizes && (
-                <div className="sizes-section">
-                  <h4>Size Prices *</h4>
+                <div
+                  style={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "6px",
+                    padding: "1rem",
+                    backgroundColor: "#f9fafb",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: "600",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Size Prices <span style={{ color: "#dc2626" }}>*</span>
+                  </div>
                   {variants.map((variant, index) => (
-                    <div key={variant.size} className="size-row">
-                      <div className="size-label">
-                        {variant.size.charAt(0).toUpperCase() +
-                          variant.size.slice(1)}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "1rem",
+                        marginBottom: "0.5rem",
+                      }}
+                      key={variant.size}
+                    >
+                      <div style={{ width: "80px" }}>
+                        <span
+                          style={{
+                            fontWeight: "600",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          {variant.size}
+                        </span>
                       </div>
-                      <div className="size-input">
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          value={variant.price}
-                          onChange={(e) =>
-                            handleVariantChange(index, e.target.value)
-                          }
-                          disabled={loading}
-                          required
-                          className={
-                            errors[`size_${variant.size}`] ? "error" : ""
-                          }
-                        />
-                        {errors[`size_${variant.size}`] && (
-                          <span className="error-text">
-                            {errors[`size_${variant.size}`]}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex" }}>
+                          <span
+                            style={{
+                              padding: "0.5rem 0.75rem",
+                              backgroundColor: "#f9fafb",
+                              border: `1px solid ${
+                                errors[`size_${variant.size}`]
+                                  ? "#dc2626"
+                                  : "#d1d5db"
+                              }`,
+                              borderRight: "none",
+                              borderRadius: "6px 0 0 6px",
+                              fontSize: "0.875rem",
+                              color: "#6b7280",
+                            }}
+                          >
+                            $
                           </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            style={{
+                              flex: 1,
+                              padding: "0.5rem 0.75rem",
+                              border: `1px solid ${
+                                errors[`size_${variant.size}`]
+                                  ? "#dc2626"
+                                  : "#d1d5db"
+                              }`,
+                              borderLeft: "none",
+                              borderRadius: "0 6px 6px 0",
+                              fontSize: "0.875rem",
+                            }}
+                            placeholder="0.00"
+                            value={variant.price}
+                            onChange={(e) =>
+                              handleVariantChange(index, e.target.value)
+                            }
+                            disabled={loading}
+                            required
+                          />
+                        </div>
+                        {errors[`size_${variant.size}`] && (
+                          <div
+                            style={{
+                              color: "#dc2626",
+                              fontSize: "0.875rem",
+                              marginTop: "0.25rem",
+                            }}
+                          >
+                            {errors[`size_${variant.size}`]}
+                          </div>
                         )}
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Images Section */}
-            <div className="form-section">
-              <h3>Update Images</h3>
-              <div className="form-group">
-                <label htmlFor="images">Add New Images</label>
+              <div>
+                <label
+                  style={{
+                    display: "block",
+                    fontWeight: "600",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  Update Images
+                </label>
                 <input
                   type="file"
                   id="images"
@@ -557,12 +929,40 @@ const EditProductModal = ({
                   multiple
                   onChange={handleFiles}
                   disabled={loading}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem 0.75rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "6px",
+                    fontSize: "0.875rem",
+                  }}
                 />
                 {images.length > 0 && (
-                  <div className="selected-files">
-                    <p>New files to upload:</p>
+                  <div
+                    style={{
+                      marginTop: "0.5rem",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "6px",
+                      padding: "0.75rem",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: "600",
+                        fontSize: "0.875rem",
+                        marginBottom: "0.25rem",
+                      }}
+                    >
+                      New files to upload:
+                    </div>
                     {images.map((file, i) => (
-                      <div key={i} className="file-name">
+                      <div
+                        key={i}
+                        style={{
+                          fontSize: "0.875rem",
+                          color: "#6b7280",
+                        }}
+                      >
                         {file.name}
                       </div>
                     ))}
@@ -570,22 +970,65 @@ const EditProductModal = ({
                 )}
               </div>
             </div>
-          </div>
 
-          <div className="modal-footer">
-            <button
-              type="button"
-              onClick={onClose}
-              className="cancel-btn"
-              disabled={loading}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "0.5rem",
+                marginTop: "1.5rem",
+              }}
             >
-              Cancel
-            </button>
-            <button type="submit" className="update-btn" disabled={loading}>
-              {loading ? "Updating..." : "Update Product"}
-            </button>
-          </div>
-        </form>
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={loading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "6px",
+                  backgroundColor: "white",
+                  color: "#374151",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "#f9fafb")
+                }
+                onMouseOut={(e) => (e.target.style.backgroundColor = "white")}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  padding: "0.5rem 1rem",
+                  border: "none",
+                  borderRadius: "6px",
+                  backgroundColor: loading ? "#9ca3af" : "#2563eb",
+                  color: "white",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontSize: "0.875rem",
+                  fontWeight: "500",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                }}
+                onMouseOver={(e) =>
+                  !loading && (e.target.style.backgroundColor = "#1d4ed8")
+                }
+                onMouseOut={(e) =>
+                  !loading && (e.target.style.backgroundColor = "#2563eb")
+                }
+              >
+                <Save size={18} />
+                {loading ? "Updating..." : "Update Product"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

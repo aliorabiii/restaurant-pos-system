@@ -1,0 +1,156 @@
+.table-bar {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 20px 20px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.table-bar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.new-order-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.new-order-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.tables-container {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tables-scroll {
+  display: flex;
+  gap: 8px;
+  min-width: min-content;
+}
+
+.table-square {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 4px;
+}
+
+.table-square:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-square.selected {
+  border-color: #2563eb;
+  border-width: 3px;
+  background: #f0f7ff;
+}
+
+.table-status-indicator {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.table-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.table-capacity {
+  font-size: 0.7rem;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.table-status-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Scrollbar styling */
+.tables-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tables-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.tables-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.tables-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-bar {
+    margin: 0 12px 12px 12px;
+    padding: 8px;
+  }
+
+  .table-square {
+    width: 70px;
+    height: 70px;
+  }
+
+  .table-number {
+    font-size: 1.1rem;
+  }
+
+  .table-capacity {
+    font-size: 0.65rem;
+  }
+
+  .table-status-text {
+    font-size: 0.6rem;
+  }
+}

@@ -70,8 +70,8 @@ const ReportsPage = () => {
 
   // State for all report data
   const [overviewStats, setOverviewStats] = useState(null);
-  /* const [revenueOverTime, setRevenueOverTime] = useState([]);
-  const [salesByCategory, setSalesByCategory] = useState([]); */
+   const [revenueOverTime, setRevenueOverTime] = useState([]);
+  const [salesByCategory, setSalesByCategory] = useState([]); 
   const [topProducts, setTopProducts] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [salesByHour, setSalesByHour] = useState([]);

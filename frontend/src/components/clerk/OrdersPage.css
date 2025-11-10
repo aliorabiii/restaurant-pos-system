@@ -1,0 +1,114 @@
+/* frontend/src/components/clerk/OrdersPage.css */
+.orders-page {
+  padding: 20px;
+  background: var(--bg);
+  min-height: calc(100vh - 80px);
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--panel);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.date-filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.date-filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.date-filter-btn.active {
+  background: var(--brand);
+  color: white;
+  border-color: var(--brand);
+}
+
+.date-filter-btn:hover:not(.active) {
+  background: #f8f9fa;
+}
+
+.custom-date-filter {
+  margin-left: 12px;
+}
+
+.custom-date-input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.orders-summary {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.orders-count {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.revenue {
+  font-weight: 700;
+  color: #059669;
+  font-size: 16px;
+}
+
+.orders-content {
+  display: grid;
+  grid-template-columns: 65% 35%;
+  gap: 20px;
+  height: calc(100vh - 160px);
+}
+
+.orders-table-section,
+.orders-stats-section {
+  background: var(--panel);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .orders-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .orders-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .date-filters {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .orders-page {
+    padding: 12px;
+  }
+
+  .date-filters {
+    flex-wrap: wrap;
+  }
+}
