@@ -62,8 +62,8 @@ const ReportsPage = () => {
   
   // State for all report data
   const [overviewStats, setOverviewStats] = useState(null);
-  /* const [revenueOverTime, setRevenueOverTime] = useState([]);
-  const [salesByCategory, setSalesByCategory] = useState([]); */
+  const [revenueOverTime, setRevenueOverTime] = useState([]);
+  const [salesByCategory, setSalesByCategory] = useState([]); 
   const [topProducts, setTopProducts] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [salesByHour, setSalesByHour] = useState([]);
@@ -286,11 +286,21 @@ const ReportsPage = () => {
   const EXPENSE_COLORS = ['#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#06b6d4'];
 
   // Calculate comprehensive financial data 
-  const dailySalaryCost = employeeStats?.salaryEstimates?.daily || 0;
-  const totalExpenses = (expenseOverview?.totalExpenses || 0);
+/*   const dailySalaryCost = employeeStats?.salaryEstimates?.daily || 0;
+ */  const totalExpenses = (expenseOverview?.totalExpenses || 0);
   const grossRevenue = overviewStats?.totalRevenue || 0;
-  const netProfit = grossRevenue - dailySalaryCost - totalExpenses;
-  const profitMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(2) : 0;
+/*   const netProfit = grossRevenue - dailySalaryCost - totalExpenses;
+/*   const profitMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(2) : 0; */
+ // ✅ Get salary expenses from category breakdown
+const salaryExpensesEntry = expensesByCategory?.find(item => item._id === "Salaries");
+const salaryExpenses = salaryExpensesEntry ? salaryExpensesEntry.total : 0;
+
+// ✅ Business expenses = everything except salaries
+const businessExpenses = totalExpenses - salaryExpenses;
+
+// ✅ Net Profit = Revenue - (All Expenses)
+const netProfit = grossRevenue - totalExpenses;
+const profitMargin = grossRevenue > 0 ? ((netProfit / grossRevenue) * 100).toFixed(2) : 0;
 
 
   
@@ -439,12 +449,13 @@ const ReportsPage = () => {
       <span className="value">${overviewStats?.totalTax?.toFixed(2) || '0.00'}</span>
     </div>
     <div className="financial-item">
-      <span className="label">Employee Salaries (Daily):</span>
-      <span className="value expense">-${dailySalaryCost.toFixed(2)}</span>
-    </div>
+  <span className="label">Employee Salaries:</span>
+  <span className="value expense">-${salaryExpenses.toFixed(2)}</span>
+</div>
+
     <div className="financial-item">
       <span className="label">Business Expenses:</span>
-      <span className="value expense">-${totalExpenses.toFixed(2)}</span>
+<span className="value expense">-${businessExpenses.toFixed(2)}</span>
     </div>
     <div className="financial-item">
       <span className="label">  • Total Expense Entries:</span>
@@ -612,29 +623,7 @@ const ReportsPage = () => {
       </div>
 
       {/* Employee Costs Summary */}
-      {employeeStats && (
-        <div className="employee-costs-section">
-          <h3>👷 Employee Salary Costs</h3>
-          <div className="costs-grid">
-            <div className="cost-item">
-              <span className="label">Active Employees:</span>
-              <span className="value">{employeeStats.activeEmployees}</span>
-            </div>
-            <div className="cost-item">
-              <span className="label">Daily Cost:</span>
-              <span className="value">${employeeStats.salaryEstimates.daily.toFixed(2)}</span>
-            </div>
-            <div className="cost-item">
-              <span className="label">Monthly Estimate:</span>
-              <span className="value">${employeeStats.salaryEstimates.monthly.toFixed(2)}</span>
-            </div>
-            <div className="cost-item">
-              <span className="label">Yearly Estimate:</span>
-              <span className="value">${employeeStats.salaryEstimates.yearly.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-      )}
+     
 
      
     </div>

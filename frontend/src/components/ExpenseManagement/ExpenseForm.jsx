@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
+import { employeesAPI } from '../../services/api'; // ✅ Make sure this import path is correct
 
 const ExpenseForm = ({ expense, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -9,9 +10,11 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
     description: '',
     amount: '',
     status: 'active',
-    notes: ''
+    notes: '',
+    employeeId: '' // ✅ Added for salary category
   });
 
+  const [employees, setEmployees] = useState([]); // ✅ Employee list
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -23,9 +26,22 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
     'Marketing',
     'Delivery',
     'Maintenance',
-    'Salaries',
+    'Salaries', // ✅ Employee Salary Category
     'Other'
   ];
+
+  // ✅ Load employees when the form opens
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await employeesAPI.getAll({ status: 'active' });
+        setEmployees(response.data || []);
+      } catch (err) {
+        console.error('Error loading employees:', err);
+      }
+    };
+    fetchEmployees();
+  }, []);
 
   useEffect(() => {
     if (expense) {
@@ -36,7 +52,8 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
         description: expense.description,
         amount: expense.amount.toString(),
         status: expense.status,
-        notes: expense.notes || ''
+        notes: expense.notes || '',
+        employeeId: expense.employeeId || '' // ✅ Load existing employee if editing salary
       });
     }
   }, [expense]);
@@ -48,10 +65,7 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
       [name]: value
     }));
     if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -66,13 +80,17 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
       newErrors.amount = 'Valid amount is required';
     }
 
+    // ✅ If Salaries category → employee must be selected
+    if (formData.category === 'Salaries' && !formData.employeeId) {
+      newErrors.employeeId = 'Select an employee for salary payments';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setLoading(true);
@@ -82,6 +100,11 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
         ...formData,
         amount: parseFloat(formData.amount)
       };
+
+      // ✅ Remove employeeId if not Salaries category
+      if (expenseData.category !== 'Salaries') {
+        delete expenseData.employeeId;
+      }
 
       await onSubmit(expenseData);
       onClose();
@@ -104,89 +127,63 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
         </div>
 
         <div className="expense-modal-body">
-          {errors.submit && (
-            <div className="expense-error">
-              {errors.submit}
-            </div>
-          )}
+          {errors.submit && <div className="expense-error">{errors.submit}</div>}
 
           <div className="expense-form-grid">
+            
+            {/* Date */}
             <div className="expense-form-group">
               <label className="expense-form-label required">Date</label>
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                className={`expense-form-input ${errors.date ? 'error' : ''}`}
-              />
-              {errors.date && <span className="expense-form-error">{errors.date}</span>}
+              <input type="date" name="date" value={formData.date} onChange={handleChange}/>
             </div>
 
+            {/* Category */}
             <div className="expense-form-group">
               <label className="expense-form-label required">Category</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className={`expense-form-select ${errors.category ? 'error' : ''}`}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
+              <select name="category" value={formData.category} onChange={handleChange}>
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
-              {errors.category && <span className="expense-form-error">{errors.category}</span>}
             </div>
+
+            {/* ✅ Employee selector appears only if Salaries category */}
+            {formData.category === 'Salaries' && (
+              <div className="expense-form-group full-width">
+                <label className="expense-form-label required">Employee</label>
+                <select
+                  name="employeeId"
+                  value={formData.employeeId}
+                  onChange={handleChange}
+                  className={errors.employeeId ? 'error' : ''}
+                >
+                  <option value="">Select employee</option>
+                  {employees.map(emp => (
+                    <option key={emp._id} value={emp._id}>
+                      {emp.fullName} ({emp.role})
+                    </option>
+                  ))}
+                </select>
+                {errors.employeeId && <span className="expense-form-error">{errors.employeeId}</span>}
+              </div>
+            )}
 
             <div className="expense-form-group full-width">
               <label className="expense-form-label required">Subcategory</label>
-              <input
-                type="text"
-                name="subcategory"
-                value={formData.subcategory}
-                onChange={handleChange}
-                placeholder="e.g., Raw Materials, Electricity Bill"
-                className={`expense-form-input ${errors.subcategory ? 'error' : ''}`}
-              />
-              {errors.subcategory && <span className="expense-form-error">{errors.subcategory}</span>}
+              <input type="text" name="subcategory" value={formData.subcategory} onChange={handleChange}/>
             </div>
 
             <div className="expense-form-group full-width">
               <label className="expense-form-label required">Description</label>
-              <input
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Brief description of the expense"
-                className={`expense-form-input ${errors.description ? 'error' : ''}`}
-              />
-              {errors.description && <span className="expense-form-error">{errors.description}</span>}
+              <input type="text" name="description" value={formData.description} onChange={handleChange}/>
             </div>
 
             <div className="expense-form-group">
-              <label className="expense-form-label required">Amount (₹)</label>
-              <input
-                type="number"
-                name="amount"
-                value={formData.amount}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                className={`expense-form-input ${errors.amount ? 'error' : ''}`}
-              />
-              {errors.amount && <span className="expense-form-error">{errors.amount}</span>}
+              <label className="expense-form-label required">Amount</label>
+              <input type="number" name="amount" value={formData.amount} onChange={handleChange}/>
             </div>
 
             <div className="expense-form-group">
               <label className="expense-form-label required">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="expense-form-select"
-              >
+              <select name="status" value={formData.status} onChange={handleChange}>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
@@ -194,31 +191,16 @@ const ExpenseForm = ({ expense, onClose, onSubmit }) => {
 
             <div className="expense-form-group full-width">
               <label className="expense-form-label">Notes</label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Additional notes (optional)"
-                className="expense-form-textarea"
-              />
+              <textarea name="notes" value={formData.notes} onChange={handleChange}/>
             </div>
           </div>
         </div>
 
         <div className="expense-modal-footer">
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="expense-modal-btn primary"
-          >
-            <Save size={20} />
-            {loading ? 'Saving...' : (expense ? 'Update Expense' : 'Add Expense')}
+          <button onClick={handleSubmit} disabled={loading} className="expense-modal-btn primary">
+            <Save size={20} /> {loading ? 'Saving...' : (expense ? 'Update Expense' : 'Add Expense')}
           </button>
-          <button
-            onClick={onClose}
-            disabled={loading}
-            className="expense-modal-btn secondary"
-          >
+          <button onClick={onClose} disabled={loading} className="expense-modal-btn secondary">
             Cancel
           </button>
         </div>

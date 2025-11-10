@@ -145,21 +145,7 @@ const EmployeeManagement = () => {
             </div>
           </div>
 
-          <div className="stat-card">
-            <div className="stat-icon">💰</div>
-            <div className="stat-info">
-              <h3>Daily Salary Cost</h3>
-              <p className="stat-value">${stats.salaryEstimates?.daily?.toFixed(2) || '0.00'}</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-info">
-              <h3>Monthly Estimate</h3>
-              <p className="stat-value">${stats.salaryEstimates?.monthly?.toFixed(2) || '0.00'}</p>
-            </div>
-          </div>
+        
         </div>
       )}
 
@@ -222,7 +208,6 @@ const EmployeeManagement = () => {
                 <th>Full Name</th>
                 <th>Role</th>
                 <th>Phone Number</th>
-                <th>Daily Salary</th>
                 <th>Start Date</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -253,7 +238,6 @@ const EmployeeManagement = () => {
                     </span>
                   </td>
                   <td>{employee.phoneNumber || '-'}</td>
-                  <td className="salary-cell">${employee.dailySalary.toFixed(2)}</td>
                   <td>{new Date(employee.startDate).toLocaleDateString()}</td>
                   <td>
                     <span className={`status-badge ${employee.status}`}>
