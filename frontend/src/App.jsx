@@ -12,7 +12,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ClerkDashboard from "./pages/ClerkDashboard"; // Add this import
 import Unauthorized from "./pages/Unauthorized";
 import ExpensePage from "./pages/ExpensePage";
-import "bootstrap/dist/css/bootstrap.min.css";
+// import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import "./App.css";
