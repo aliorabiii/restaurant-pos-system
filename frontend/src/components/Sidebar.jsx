@@ -48,7 +48,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       path: "/clerk", // CHANGED: Now points to separate route
       icon: <FiShoppingCart className="nav-icon" />,
       label: "Clerk Dashboard",
-      roles: ["main_admin", "admin", "manager", "clerk"],
+      roles: ["main_admin","cashier"],
     },
     {
       path: "/admin/products",
