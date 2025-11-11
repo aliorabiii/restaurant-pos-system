@@ -1,81 +1,64 @@
-# 🍽️ Restaurant POS & Management System
+<div align="center">
 
-A complete **Restaurant Point of Sale & Management System** built using the **MERN Stack**.  
-This system is designed to support real restaurant workflows including order handling, cashier operations, expense tracking, employee management, financial reporting, and multi-user role permissions.
+# 🍽️ Restaurant POS & Management System  
+### Modern Full-Stack Solution for Restaurants
 
----
+![GitHub Repo stars](https://img.shields.io/github/stars/aliorabiii/restaurant-pos-system?style=for-the-badge&color=gold)
+![GitHub forks](https://img.shields.io/github/forks/aliorabiii/restaurant-pos-system?style=for-the-badge&color=blue)
+![GitHub last commit](https://img.shields.io/github/last-commit/aliorabiii/restaurant-pos-system?style=for-the-badge&color=purple)
+![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
-## ✨ Key Features
+**A complete POS system built using the MERN stack with role-based dashboards, expense tracking, employee management, and financial analytics.**
 
-### 🖥️ Role-Based Dashboards
-- **Main Admin**: Full access to all modules
-- **Admin / Manager**: Manage products, employees, expenses, and reports
-- **Accountant**: Access to financial reports & expense management
-- **Cashier (Clerk)**: Dedicated cashier dashboard for order processing only
-
-### 💵 POS & Cashier System
-- Simple and fast cashier interface
-- Real-time order handling
-- Transaction summary display
-
-### 🧾 Expense Tracking (including Salaries)
-- Record business expenses by category
-- Employee salaries are entered as **expense entries** (not auto calculated)
-- Expense analytics charts & reports
-
-### 👨‍🍳 Employee Management
-- Add / Edit / Activate / Deactivate employees
-- Track start dates, roles, and notes
-- Daily salary is stored as reference but **salary payout is done through expenses**
-
-### 🍔 Product / Inventory
-- Add products with categories
-- Manage availability & pricing
-
-### 📊 Reports & Insights
-- Revenue trends (daily / weekly / monthly)
-- Peak sales hours and days
-- Top-selling products
-- Expense distribution
-- Net profit calculations
+</div>
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ **Features Overview**
+
+| Module | Description |
+|--------|-------------|
+| **POS / Cashier System** | Fast and optimized UI for order handling |
+| **Role-Based Dashboards** | Different UI access for Admin / Manager / Accountant / Cashier |
+| **Expense Management** | Track all business expenses & employee salaries as expenses |
+| **Product Management** | Add, edit, categorize & manage inventory items |
+| **Employee Management** | Add employees & manage employment status |
+| **Analytics & Reports** | Revenue trends, top products, profit/loss, expenses overview |
+
+---
+
+## 🚀 **Tech Stack**
 
 | Layer | Technology |
 |------|------------|
-| Frontend | React.js (Vite) |
-| Backend | Node.js + Express.js |
-| Database | MongoDB (Mongoose ORM) |
-| Auth | JWT (JSON Web Token) |
-| UI | Tailwind / Custom Components |
-| Charts | Recharts |
+| **Frontend** | React.js (Vite), Context API, Tailwind (optional custom styling) |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB + Mongoose |
+| **Authentication** | JWT (Token-Based Auth) |
+| **Charts & Analytics** | Recharts |
 
 ---
 
-## 🗂️ Project Structure
-``
-restaurant-pos/
+## 🧭 **Project Structure**
+
+```bash
+restaurant-pos-system/
 │
 ├── backend/
-│ ├── models/ # Mongoose Schemas
-│ ├── controllers/ # API Logic
-│ ├── routes/ # API Endpoints
-│ ├── middleware/ # Auth & Role Permissions
-│ ├── server.js
+│   ├── controllers/       # API Logic (Products, Employees, Orders, Reports)
+│   ├── middleware/        # Auth + Role Permissions
+│   ├── models/            # MongoDB Schemas
+│   ├── routes/            # REST API Endpoints
+│   └── server.js
 │
 └── frontend/
-├── src/
-│ ├── components/
-│ ├── pages/
-│ ├── context/ # Auth Context & User Session
-│ ├── services/ # API Service Functions
-│ ├── App.jsx
-│ └── main.jsx
-``
+    ├── src/
+    │   ├── components/    # UI components
+    │   ├── pages/         # Page views
+    │   ├── context/       # Auth & User Session
+    │   ├── services/      # API Calls (axios)
+    │   └── App.jsx
 
----
 
 ## ⚙️ Installation & Setup
 
