@@ -55,7 +55,7 @@ This system is designed to support real restaurant workflows including order han
 ---
 
 ## 🗂️ Project Structure
-
+``
 restaurant-pos/
 │
 ├── backend/
@@ -73,7 +73,7 @@ restaurant-pos/
 │ ├── services/ # API Service Functions
 │ ├── App.jsx
 │ └── main.jsx
-
+``
 
 ---
 
