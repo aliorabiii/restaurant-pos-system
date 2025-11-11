@@ -56,3 +56,52 @@ This system is designed to support real restaurant workflows including order han
 
 ## 🗂️ Project Structure
 
+restaurant-pos/
+│
+├── backend/
+│ ├── models/ # Mongoose Schemas
+│ ├── controllers/ # API Logic
+│ ├── routes/ # API Endpoints
+│ ├── middleware/ # Auth & Role Permissions
+│ ├── server.js
+│
+└── frontend/
+├── src/
+│ ├── components/
+│ ├── pages/
+│ ├── context/ # Auth Context & User Session
+│ ├── services/ # API Service Functions
+│ ├── App.jsx
+│ └── main.jsx
+
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1️⃣ Clone the Repository
+```bash
+git clone <YOUR-REPO-URL>
+cd restaurant-pos
+
+2️⃣ Backend Setup
+cd backend
+npm install
+
+
+Create .env file:
+
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+PORT=5000
+
+
+Start backend:
+
+npm run dev
+
+3️⃣ Frontend Setup
+cd frontend
+npm install
+npm run dev
+
